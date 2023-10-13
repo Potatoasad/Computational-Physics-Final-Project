@@ -23,7 +23,10 @@ Project ideas
 
 ### What's common in the things we've selected:
 
-- [ ] A class to define a probability distribution
+- [ ] A class to define a probability distribution over the state space,
+  - [ ] break up into Cost function $C(x)$ and prob distribution over the state space $\exp(-\beta C(x))$
 - [ ] A class to sample using any/many methods (or use pre packaged samplers):
   - [ ] Metropolis Hastings
   - [ ] Maybe Gradient based? Hamiltonian Monte Carlo?
+- [ ] Benchmark for a nice potential landscape:
+  - [ ] e.g. $C(x) = \frac{1}{2}x^2$
