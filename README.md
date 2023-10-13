@@ -8,12 +8,13 @@
 Here are the ideas we're thinking about so far:
 
 Project ideas
-	◦	Inspiral stochastic dynamics
-	✓	Bayesian inference 
-	◦	Differentiable ODE solver 
-	✓	Finding distribution samples are coming from
-	◦	Differentiable ODE solver with distribution of parameter estimation
-	◦	Stochastic stuff is common interest 
-	◦	Different cost functions corresponding to different measures of distance between distributions
-	◦	KPZ
-	✓	Imaginary time evolution and LQFT
+
+- [ ]  Inspiral stochastic dynamics
+- [x] Bayesian Inference
+- [ ] Differentiable ODE solver 
+- [x] Finding distribution samples are coming from
+- [ ] Differentiable ODE solver with distribution of parameter estimation
+- [ ] Stochastic stuff is common interest 
+- [ ] Different cost functions corresponding to different measures of distance between distributions
+- [ ] KPZ
+- [x] Imaginary time evolution and LQFT
