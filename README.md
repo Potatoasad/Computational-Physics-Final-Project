@@ -18,3 +18,12 @@ Project ideas
 - [ ] Different cost functions corresponding to different measures of distance between distributions
 - [ ] KPZ
 - [x] Imaginary time evolution and LQFT
+
+
+
+### What's common in the things we've selected:
+
+- [ ] A class to define a probability distribution
+- [ ] A class to sample using any/many methods (or use pre packaged samplers):
+  - [ ] Metropolis Hastings
+  - [ ] Maybe Gradient based? Hamiltonian Monte Carlo?
