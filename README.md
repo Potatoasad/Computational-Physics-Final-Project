@@ -12,11 +12,12 @@ Project ideas
 - [ ]  Inspiral stochastic dynamics
 - [x] Bayesian Inference
 - [ ] Differentiable ODE solver 
-- [x] Finding distribution samples are coming from
+- [ ] Finding distribution samples are coming from
 - [ ] Differentiable ODE solver with distribution of parameter estimation
 - [ ] Stochastic stuff is common interest 
 - [ ] Different cost functions corresponding to different measures of distance between distributions
 - [ ] KPZ
+- [x] Statistical Mechanics steady state problems
 - [x] Imaginary time evolution and LQFT
 
 
