@@ -31,3 +31,37 @@ Project ideas
   - [ ] Maybe Gradient based? Hamiltonian Monte Carlo?
 - [ ] Benchmark for a nice potential landscape:
   - [ ] e.g. $C(x) = \frac{1}{2}x^2$
+
+```python
+#import jax.numpy as jnp
+
+try:
+  import jax.numpy as np
+else:
+  import numpy as np
+  
+
+class Distribution:
+  - pdf
+	- logpdf return -0.5*x**2
+
+class Sampler:
+  - sample
+  - distribution (object)
+
+class MCMCSampler:
+  - proposal step (acceptance criteria)
+  - compute pdf ratio
+  
+class SamplerVisualization:
+  - Sampler
+  - Plots
+  
+class CornerPlot:
+  
+
+class StateSpaceAnimation
+ - samples
+ - animate() 
+```
+
