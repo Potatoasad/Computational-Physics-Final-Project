@@ -18,7 +18,7 @@ Project ideas
 - [ ] Different cost functions corresponding to different measures of distance between distributions
 - [ ] KPZ
 - [x] Statistical Mechanics steady state problems
-- [x] Imaginary time evolution and LQFT
+- [ ] Imaginary time evolution and LQFT
 
 
 
