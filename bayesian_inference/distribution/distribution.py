@@ -23,13 +23,13 @@ class Distribution:
     def __init__(self, name):
         self.name = name
 
-    def pdf(x):
+    def pdf(self, x):
         raise NotImplementedError("This is the method from the abstract class, please inherit this class and implement pdf(x)")
-
-    def logpdf(x):
+ 
+    def logpdf(self, x):
         raise NotImplementedError("This is the method from the abstract class, please inherit this class and implement logpdf(x)")
 
-    def dlogpdf(x):
+    def dlogpdf(self, x):
         raise NotImplementedError("This is the method from the abstract class, please inherit this class and implement dlogpdf(x)")
 
 
