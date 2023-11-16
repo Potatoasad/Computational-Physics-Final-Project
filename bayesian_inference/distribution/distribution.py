@@ -1,7 +1,10 @@
 try:
     import jax.numpy as np
-else:
+    from jax import grad
+    JAX = True
+except:
     import numpy as np
+    JAX = False
 
 
 class Distribution:

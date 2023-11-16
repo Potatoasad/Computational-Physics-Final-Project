@@ -2,8 +2,11 @@ from .distribution import *
 
 try:
 	import jax.numpy as np
-else:
+	from jax import grad
+	JAX = True
+except:
 	import numpy as np
+	JAX = False
 
 class Normal(Distribution):
     """
@@ -40,9 +43,12 @@ class Normal(Distribution):
 
     def logpdf(self, x):
         z = (x - self.mu)/self.sigma
-        return -(z**2)/2 - np.log()
+        return -(z**2)/2 - np.log(2*np.pi*self.sigma)/2
 
     def dlogpdf(self, x):
-        raise NotImplementedError("This is the method from the abstract class, please inherit this class and implement dlogpdf(x)")
+        if JAX:
+            return self.logpdf(x), grad(self.logpdf)(x)
+        else:
+            raise NotImplementedError("No JAX to autodiff, and we haven't implemented this part")
 
 
