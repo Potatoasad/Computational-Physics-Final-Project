@@ -5,7 +5,7 @@ BOX_EDGE_LENGTH =                   1.0     # sets the length scale
 DEFAULT_RELATIVE_BALL_DIAMETER =    0.02    # of BOX_EDGE_LENGTH
 DEFAULT_RELATIVE_MAX_ADJUSTMENT =   0.02    # of BOX_EDGE_LENGTH
 DEFAULT_HYPERPARAMETER =            0.1     # inverse temperature
-DEFAULT_STORE_HISTORY =             False
+DEFAULT_STORE_HISTORY =             True
 DEFAULT_NUMBER_SAMPLES =            1024    
 RANDOM_SEED =                       10
 np.random.seed(RANDOM_SEED)
@@ -74,6 +74,7 @@ class HardSpherePacking:
             
             if to_accept:
                 self.coordinates = temporary_coordinates.copy()
+                self.history.append(self.coordinates)
                 accepts += 1
         
         self.acceptance_rate = accepts / self.number_samples

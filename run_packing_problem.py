@@ -3,6 +3,7 @@ import time as t
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+plt.ion()
 hsp = HardSpherePacking(number_balls=512, relative_ball_diameter=0.1, dimensions=3, hyperparameter=0, number_samples=16)
 start = t.time()
 hsp.fit()
@@ -20,6 +21,9 @@ def plot_sphere(ax, center, radius):
     z = radius * np.outer(np.cos(theta), np.ones(len(phi)))
     for i in range(len(center)):
         ax.plot_surface(x + center[i, 0], y + center[i, 1], z + center[i, 2])
-plot_sphere(ax, hsp.coordinates, hsp.ball_radius)
-plt.show()
+for i in range(len(hsp.history)):
+    plot_sphere(ax, hsp.history[i], hsp.ball_radius)
+    plt.show()
+    plt.pause(0.1)
+    plt.cla()
 print(hsp.coordinates[-1])
