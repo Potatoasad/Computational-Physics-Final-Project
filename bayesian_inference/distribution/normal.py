@@ -15,9 +15,6 @@ class Normal(Distribution):
 
     Attributes
     ----------
-    name: str
-        stores the name of the distribution
-
     mu: float
         stores the location of the distirbution
 
@@ -36,8 +33,8 @@ class Normal(Distribution):
         returns the log of the probability density function (PDF) at point x 
         along with the vector gradient of the PDF.
     """
-    def __init__(self, name, mu, sigma):
-        super().__init__(name)
+    def __init__(self, mu, sigma):
+        super().__init__("Normal")
         self.mu = mu
         self.sigma = sigma
 
