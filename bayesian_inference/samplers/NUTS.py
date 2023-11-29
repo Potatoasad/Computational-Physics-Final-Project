@@ -11,16 +11,39 @@ import pandas as pd
 
 import blackjax
 
+from .DomainChanger import DomainChanger
+
 class NUTS:
-    def __init__(self, likelihood, init_position, step_size=1e-3, inverse_mass_matrix=None, rng_key=None, warmup_steps=100):
+    def __init__(self, likelihood, init_position, limits=None,
+                 step_size=1e-3, inverse_mass_matrix=None, rng_key=None, 
+                 warmup_steps=100):
         if rng_key is None:
             rng_key = jax.random.key(np.random.randint(2**32))
+
+        if limits is None:
+            self.domain_changer = DomainChanger({key : 'infinite' for key in init_position.keys()})
+        else:
+            limit_dict = {}
+            for key in init_position:
+                if key in limits:
+                    limit_dict[key] = limits[key]
+                else:
+                    limit_dict[key] = 'infinite'
+            self.domain_changer = DomainChanger(limit_dict)
 
         self.likelihood = likelihood                                # likelihood object
         self.step_size = step_size                                  # stepsize (at the moment it doesn't matter)
         self.rng_key = rng_key                                      # key
-        self.likelihood_func = lambda x: self.likelihood.logpdf(x)  # likelihood function
-        self.init_position = init_position
+
+        def likelihood_func(x):
+            #self.domain_changer.inverse_transform_in_place(x)
+            return self.likelihood.logpdf(x)
+
+        self.likelihood_func = lambda x: likelihood_func(x)  # likelihood function
+        my_init = init_position.copy()
+        #self.domain_changer.transform_in_place(my_init)
+        #print(init_position, my_init)
+        self.init_position = my_init
         self.warmup_steps = warmup_steps
 
         ## Set up the warmup for the HMC sampler
