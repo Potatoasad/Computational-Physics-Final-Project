@@ -13,6 +13,12 @@ import blackjax
 
 from .DomainChanger import DomainChanger
 
+def convert_to_jax_array(dictionary):
+    for key, value in dictionary.items():
+        if isinstance(value, (float, int)):  # Check if the value is a float or int
+            dictionary[key] = jnp.array([value])  # Replace with a JAX array of size 1
+    return dictionary
+
 class NUTS:
     def __init__(self, likelihood, init_position, limits=None,
                  step_size=1e-3, inverse_mass_matrix=None, rng_key=None, 
@@ -35,24 +41,20 @@ class NUTS:
         self.step_size = step_size                                  # stepsize (at the moment it doesn't matter)
         self.rng_key = rng_key                                      # key
 
-        def likelihood_func(x):
-            #self.domain_changer.inverse_transform_in_place(x)
-            return self.likelihood.logpdf(x)
-
-        self.likelihood_func = lambda x: likelihood_func(x)  # likelihood function
-        my_init = init_position.copy()
-        #self.domain_changer.transform_in_place(my_init)
-        #print(init_position, my_init)
+        self.likelihood_func = self.domain_changer.logprob_wrapped(self.likelihood.logpdf)#lambda x: likelihood_func(x)  # likelihood function
+        #my_init = init_position.copy()
+        my_init = self.domain_changer.transform(convert_to_jax_array(init_position))
+        print(init_position, my_init)
         self.init_position = my_init
         self.warmup_steps = warmup_steps
 
         ## Set up the warmup for the HMC sampler
         warmup = blackjax.window_adaptation(blackjax.nuts, self.likelihood_func)
         rng_key, warmup_key, sample_key = jax.random.split(rng_key, 3)
-        (self._state_init, parameters), _ = warmup.run(warmup_key, self.init_position, num_steps=warmup_steps)
+        (self._state_init, self.parameters), _ = warmup.run(warmup_key, self.init_position, num_steps=warmup_steps)
 
         # the kernel performs one step
-        self.kernel = blackjax.nuts(self.likelihood_func, **parameters).step
+        self.kernel = blackjax.nuts(self.likelihood_func, **self.parameters).step
         self.states = []
 
     def step(self, rng_key, x):
@@ -78,15 +80,20 @@ class NUTS:
         self.states = []
 
         self.rng_key = jax.random.key(np.random.randint(2**16)) 
+        self.rng_key, sample_key = jax.random.split(self.rng_key)
 
         ## Set up the warmup for the HMC sampler
-        warmup = blackjax.window_adaptation(blackjax.nuts, self.likelihood_func)
+        """warmup = blackjax.window_adaptation(blackjax.nuts, self.likelihood_func)
         rng_key, warmup_key, sample_key = jax.random.split(self.rng_key, 3)
-        (self._state_init, parameters), _ = warmup.run(warmup_key, self.init_position, num_steps=self.warmup_steps)
+        (self._state_init, parameters), _ = warmup.run(warmup_key, self.init_position, num_steps=self.warmup_steps)"""
 
-        self.kernel = blackjax.nuts(self.likelihood_func, **parameters).step
+        #self.kernel = blackjax.nuts(self.likelihood_func, **parameters).step
         self.states = []
         
         self.inference_loop(num_samples, sample_key=sample_key)
-        return pd.DataFrame(self.states.position)
+
+        positions = self.domain_changer.inverse_transform(self.states.position)
+        data = {k: np.array(v).reshape(-1) for k, v in positions.items()}
+        df = pd.DataFrame(data)
+        return df  #pd.DataFrame(positions)
         

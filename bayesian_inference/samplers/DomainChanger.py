@@ -4,6 +4,13 @@ import jax.numpy as jnp
 class DomainChanger:
     def __init__(self, ranges):
         self.ranges = ranges
+        self.transforms = None
+        self.inverse_transforms = None 
+
+    def compute_transforms(self):
+        if (self.transforms is None) or (self.inverse_transforms is None):
+            self.transforms = {key : (lambda x: self.transform_to_infinite(x, self.ranges[key][0], self.ranges[key][1])) for key in self.ranges.keys()}
+            self.inverse_transforms = {key : (lambda x: self.inverse_transform_from_infinite(x, self.ranges[key][0], self.ranges[key][1])) for key in self.ranges.keys()}
     
     def transform_to_infinite(self, x, a, b):
         # Normalize x to [0, 1]
@@ -25,45 +32,43 @@ class DomainChanger:
         x = normalized_y * (b - a) + a
         return x
 
-    def transform(self, x):
+    def transform(self, x, suffix = ''):
+        self.compute_transforms()
         keys = list(self.ranges.keys())
         new_x = {}
         for key in keys:
             if self.ranges[key] == 'infinite':
-                new_x[key + '_transformed'] = x[key]
+                new_x[key + suffix] = x[key]
             else:
-                new_x[key + '_transformed'] = self.transform_to_infinite(x[key], self.ranges[key][0], self.ranges[key][1])
+                new_x[key + suffix] = self.transforms[key](x[key])
 
         return new_x
 
-    def inverse_transform(self, x):
+    def inverse_transform(self, x, suffix=''):
+        self.compute_transforms()
         keys = list(self.ranges.keys())
         new_x = {}
         for key in keys:
             if self.ranges[key] == 'infinite':
-                new_x[key] = x[key + '_transformed']
+                new_x[key] = x[key + suffix]
             else:
-                new_x[key] = self.inverse_transform_from_infinite(x[key + '_transformed'], self.ranges[key][0], self.ranges[key][1])
+                new_x[key] = self.inverse_transforms[key](x[key + suffix])
 
         return new_x
 
-    def transform_in_place(self, x):
-        keys = list(self.ranges.keys())
-        for key in keys:
-            if self.ranges[key] == 'infinite':
-                x[key] = x[key]
-            else:
-                x[key] = self.transform_to_infinite(x[key], self.ranges[key][0], self.ranges[key][1])
+    def log_jacobian_determinant(self, func, y):
+        jacobian_mat = jax.jacfwd(func)(y)
+        #print(jacobian_mat, y)
+        det_jacobian = jnp.linalg.det(jacobian_mat)
+        return jnp.log(jnp.abs(det_jacobian))
 
-        return x
+    def inverse_log_jacobian(self, x):
+        return jnp.sum(jnp.array([self.log_jacobian_determinant(self.inverse_transforms[key], x[key]) for key in x.keys()]))
 
-    def inverse_transform_in_place(self, x):
-        keys = list(self.ranges.keys())
-        for key in keys:
-            if self.ranges[key] == 'infinite':
-                x[key] = x[key]
-            else:
-                x[key] = self.inverse_transform_from_infinite(x[key], self.ranges[key][0], self.ranges[key][1])
+    def logprob_wrapped(self, logprob_func):
+        def likelihood_func(y):
+            x = self.inverse_transform(y)
+            return  logprob_func(x) + self.inverse_log_jacobian(y)
+        return likelihood_func
 
-        return x
         
