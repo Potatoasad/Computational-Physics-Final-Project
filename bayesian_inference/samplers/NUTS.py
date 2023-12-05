@@ -20,6 +20,9 @@ def convert_to_jax_array(dictionary):
     return dictionary
 
 class NUTS:
+    """
+    Solves a problem specified by a likelihood object using the NUTS sampler. 
+    """
     def __init__(self, likelihood, init_position, limits=None,
                  step_size=1e-3, inverse_mass_matrix=None, rng_key=None, 
                  warmup_steps=100):
@@ -27,7 +30,7 @@ class NUTS:
             rng_key = jax.random.key(np.random.randint(2**32))
 
         if limits is None:
-            self.domain_changer = DomainChanger({key : 'infinite' for key in init_position.keys()})
+            self.domain_changer = DomainChanger({key : 'infinite' for key in init_position.keys()}, backend='JAX')
         else:
             limit_dict = {}
             for key in init_position:
@@ -35,7 +38,7 @@ class NUTS:
                     limit_dict[key] = limits[key]
                 else:
                     limit_dict[key] = 'infinite'
-            self.domain_changer = DomainChanger(limit_dict)
+            self.domain_changer = DomainChanger(limit_dict, backend='JAX')
 
         self.likelihood = likelihood                                # likelihood object
         self.step_size = step_size                                  # stepsize (at the moment it doesn't matter)
@@ -77,23 +80,13 @@ class NUTS:
         return self.states            
 
     def run(self, num_samples=100):
-        self.states = []
-
         self.rng_key = jax.random.key(np.random.randint(2**16)) 
         self.rng_key, sample_key = jax.random.split(self.rng_key)
-
-        ## Set up the warmup for the HMC sampler
-        """warmup = blackjax.window_adaptation(blackjax.nuts, self.likelihood_func)
-        rng_key, warmup_key, sample_key = jax.random.split(self.rng_key, 3)
-        (self._state_init, parameters), _ = warmup.run(warmup_key, self.init_position, num_steps=self.warmup_steps)"""
-
-        #self.kernel = blackjax.nuts(self.likelihood_func, **parameters).step
-        self.states = []
         
         self.inference_loop(num_samples, sample_key=sample_key)
 
         positions = self.domain_changer.inverse_transform(self.states.position)
         data = {k: np.array(v).reshape(-1) for k, v in positions.items()}
-        df = pd.DataFrame(data)
-        return df  #pd.DataFrame(positions)
+        #df = pd.DataFrame(data)
+        return positions #df  #pd.DataFrame(positions)
         
