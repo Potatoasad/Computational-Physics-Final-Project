@@ -14,6 +14,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme myst_parser nbsphinx pygments
+          sphinx-apidoc -o docs ./quicksampler
           sudo apt-get install -y pandoc
       - name: Clean before build
         run: |
