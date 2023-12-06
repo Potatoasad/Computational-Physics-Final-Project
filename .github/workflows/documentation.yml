@@ -13,9 +13,11 @@ jobs:
       - uses: actions/setup-python@v3
       - name: Install dependencies
         run: |
+          pip install --upgrade pip
+          sudo apt-get install -y pandoc 
           pip install sphinx sphinx_rtd_theme myst_parser nbsphinx pygments
-          sphinx-apidoc -o docs ./quicksampler
-          sudo apt-get install -y pandoc
+          pip install ipython
+          sphinx-apidoc -o ./docs ./quicksampler
       - name: Clean before build
         run: |
           rm -rf _build/
