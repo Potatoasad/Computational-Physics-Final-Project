@@ -47,7 +47,8 @@ class NUTS:
         self.likelihood_func = self.domain_changer.logprob_wrapped(self.likelihood.logpdf)#lambda x: likelihood_func(x)  # likelihood function
         #my_init = init_position.copy()
         my_init = self.domain_changer.transform(convert_to_jax_array(init_position))
-        print(init_position, my_init)
+        self.num_samples = None
+        #print(init_position, my_init)
         self.init_position = my_init
         self.warmup_steps = warmup_steps
 
@@ -59,6 +60,8 @@ class NUTS:
         # the kernel performs one step
         self.kernel = blackjax.nuts(self.likelihood_func, **self.parameters).step
         self.states = []
+
+        self.positions = None
 
     def step(self, rng_key, x):
         return self.kernel(rng_key, x)
@@ -80,13 +83,27 @@ class NUTS:
         return self.states            
 
     def run(self, num_samples=100):
+        self.num_samples = num_samples
         self.rng_key = jax.random.key(np.random.randint(2**16)) 
         self.rng_key, sample_key = jax.random.split(self.rng_key)
         
         self.inference_loop(num_samples, sample_key=sample_key)
 
         positions = self.domain_changer.inverse_transform(self.states.position)
-        data = {k: np.array(v).reshape(-1) for k, v in positions.items()}
-        #df = pd.DataFrame(data)
-        return positions #df  #pd.DataFrame(positions)
+        self.positions = positions
+        return self.result
+
+    @property
+    def result(self):
+        if self.num_samples is None:
+            return None
+
+        def replace_array_with_float(val):
+            if val.shape == (1,):
+                return float(val[0])
+            else:
+                return val
+        return {key: [replace_array_with_float(value[i]) for i in range(self.num_samples)] for (key, value) in self.positions.items()}
+        
+    
         

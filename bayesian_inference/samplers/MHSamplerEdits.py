@@ -3,10 +3,31 @@ from scipy.stats import norm
 from tqdm import trange
 from .DomainChanger import DomainChanger
 
+import jax
+import jax.numpy as jnp
+
+def convert_to_jax_array(dictionary):
+    for key, value in dictionary.items():
+        if isinstance(value, (float, int)):  # Check if the value is a float or int
+            dictionary[key] = jnp.array([value])  # Replace with a JAX array of size 1
+    return dictionary
+
+def create_rng_key(backend):
+    if backend == 'numpy':
+        return np.random.seed(np.random.randint(2**32))
+    elif backend == 'JAX':
+        return jax.random.key(np.random.randint(2**32))
+    else:
+        raise ValueError(f"Do not recognize the {backend} backend")
+
 class AbstractProposal:
-    def __init__(self, step_size, keys=None):
+    def __init__(self, step_size, backend='numpy', rng_key=None):
         self.step_size = step_size
-        self.keys = keys
+        self.keys = None
+        self.backend = backend
+        self.rng_key = rng_key
+        if rng_key is None:
+            self.rng_key = create_rng_key(backend)
 
     def __call__(self, x):
         if self.keys is None:
@@ -16,8 +37,8 @@ class AbstractProposal:
 
 
 class SphericalGaussianProposal(AbstractProposal):
-    def __init__(self, step_size):
-        super().__init__(step_size)
+    def __init__(self, step_size, backend='numpy', rng_key=None):
+        super().__init__(step_size, backend=backend, rng_key=rng_key)
 
     def next_step(self, key, value):
         """
@@ -32,14 +53,27 @@ class SphericalGaussianProposal(AbstractProposal):
         >>> SphericalGaussianProposal(0.1)
         >>> SphericalGaussianProposal.next_step('mu', x['mu']) # random normal with the right shape. 
         """
-        if type(value) == np.ndarray:
-            # Add a random gaussian of std step size to every entry of the matrix
-            return np.random.randn(*value.shape)*self.step_size 
-        elif (type(value) == type(2.0)) or (type(value) == np.float64):
-            # Add a random gaussian of std step size to the float value
-            return np.random.randn()*self.step_size
+        if self.backend == 'numpy':
+            if type(value) == np.ndarray:
+                # Add a random gaussian of std step size to every entry of the matrix
+                return np.random.randn(*value.shape)*self.step_size 
+            elif (type(value) == type(2.0)) or (type(value) == np.float64):
+                # Add a random gaussian of std step size to the float value
+                return np.random.randn()*self.step_size
+            else:
+                raise ValueError(f"Got value of type {type(value)} having value {value} no idea what to do with this.")
+        elif self.backend == 'JAX':
+            new_key, self.rng_key = jax.random.split(self.rng_key)
+            if type(value) == type(jnp.array([0.0, 1.0])):
+                # Add a random gaussian of std step size to every entry of the matrix
+                return jax.lax.stop_gradient(jax.random.normal(new_key , value.shape))*self.step_size 
+            elif (type(value) == type(2.0)) or (type(value) == type(jnp.array([0.0, 10.0])[0])):
+                # Add a random gaussian of std step size to the float value
+                return jax.lax.stop_gradient(jax.random.normal(new_key))*self.step_size
+            else:
+                raise ValueError(f"Got value of type {type(value)} having value {value} no idea what to do with this. It isnt {type(jax.array([0.0, 10.0])[0])}")
         else:
-            raise ValueError(f"Got value of type {type(value)} having value {value} no idea what to do with this.")
+            raise ValueError(f"Do not recognize the {self.backend} backend")
 
 
 
@@ -48,10 +82,13 @@ MAX_REJECTS_DEFAULT = 10000
 
 
 class MHSampler:
-    def __init__(self, likelihood, init_position, step_size=1, limits=None, rng_key=None):
+    def __init__(self, likelihood, init_position, step_size=1, limits=None, rng_key=None, backend='numpy'):
         
         self.likelihood = likelihood
-        self.backend = 'numpy'
+        self.backend = backend
+        self.rng_key = rng_key
+        if rng_key is None:
+            self.rng_key = create_rng_key(backend)
 
         if limits is None:
             self.domain_changer = DomainChanger({key : 'infinite' for key in init_position.keys()}, backend=self.backend)
@@ -65,6 +102,10 @@ class MHSampler:
             self.domain_changer = DomainChanger(limit_dict, backend=self.backend)
 
         self.init_position = init_position
+
+        if self.backend == 'JAX':
+            self.init_position = jax.lax.stop_gradient(convert_to_jax_array(self.init_position))
+
         self.init_position_transformed = self.domain_changer.transform(self.init_position)
         self.likelihood_func = self.domain_changer.logprob_wrapped(self.likelihood.logpdf)
 
@@ -76,17 +117,23 @@ class MHSampler:
         # it will be an array because each sample will have exactly same feature vectors
 
         self.step_size = step_size      # stepsize can be vector as long as dimensions match
-        self.proposal = SphericalGaussianProposal(self.step_size)
+        self.proposal = SphericalGaussianProposal(self.step_size, rng_key=self.rng_key, backend=self.backend)
         
         if rng_key is None:
-            rng_key = np.random.seed(np.random.randint(2**32))
+            if self.backend == 'numpy':
+                rng_key = np.random.seed(np.random.randint(2**32))
+            elif self.backend == 'JAX':
+                rng_key = jax.random.key(np.random.randint(2**32))
+            else:
+                raise ValueError(f"Do not recognize the {self.backend} backend")
         self.rng_key = rng_key
 
         self.history = []
         self.max_rejects_default = 10000 
 
         self.running_acceptances = 0
-        self.total_steps = 0                              
+        self.total_steps = 0  
+        self.num_samples = None                            
         
         #if proposal is None:
         #    proposal = lambda mu_trial: norm(mu_trial,self.step_size*np.ones(self.dim)).rvs()
@@ -95,6 +142,13 @@ class MHSampler:
         #if prior is None:
         #    prior = lambda mu_trial: norm(self.mu_sample,self.var_sample).logpdf(mu_trial)
         #self.prior = prior
+
+    def accept_reject(self, p_accept):
+        if self.backend == 'numpy':
+            return (np.random.rand() < p_accept)
+        elif self.backend == 'JAX':
+            return bool(jax.random.uniform(self.rng_key) < p_accept)
+
 
     def step(self, x, max_rejects = MAX_REJECTS_DEFAULT): 
         accept = False
@@ -112,8 +166,14 @@ class MHSampler:
             p_current = log_likelihood_current #+ log_prior_current
             p_proposal = log_likelihood_proposal #+ log_prior_proposal 
 
-            p_accept = np.exp(p_proposal - p_current)
-            accept = (np.random.rand() < p_accept)
+            if self.backend == 'JAX':
+                p_accept = jnp.exp(p_proposal - p_current)
+            elif self.backend == 'numpy':
+                p_accept = np.exp(p_proposal - p_current)
+            else:
+                raise ValueError(f"Do not recognize the {self.backend} backend")
+            
+            accept = self.accept_reject(p_accept)
 
             self.total_steps += 1 
 
@@ -126,6 +186,7 @@ class MHSampler:
                     raise ValueError("The next proposal has been rejected {max_rejects} times! try changing something")       
 
     def run(self, n_steps = 1000, max_rejects=MAX_REJECTS_DEFAULT):
+        self.num_samples = n_steps
         y = self.init_position_transformed
         self.history.append(self.domain_changer.inverse_transform(self.init_position_transformed))
 
@@ -142,7 +203,22 @@ class MHSampler:
         acceptance_rate = self.running_acceptances/self.total_steps
 
         print(f"Sampling finished with an acceptance rate of {np.round(acceptance_rate*100, decimals=2)}")
-        return self.history
+        return self.result
 
+
+    @property
+    def result(self):
+        if self.num_samples is None:
+            return None
+
+        def replace_array_with_float(val):
+            if getattr(val, 'shape', None) == (1,):
+                return float(val[0])
+            elif type(val) == float:
+                return val
+            else:
+                return np.array(val)
+
+        return {key: ([replace_array_with_float(self.history[i][key]) for i in range(self.num_samples)]) for key in self.history[0].keys()}
 
 

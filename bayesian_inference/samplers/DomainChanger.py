@@ -56,8 +56,21 @@ class DomainChanger(LogisticTransform):
 
     def compute_transforms(self):
         if (self.transforms is None) or (self.inverse_transforms is None):
-            self.transforms = {key : (lambda x: self.transform_to_infinite(x, self.ranges[key][0], self.ranges[key][1])) for key in self.ranges.keys()}
-            self.inverse_transforms = {key : (lambda x: self.inverse_transform_from_infinite(x, self.ranges[key][0], self.ranges[key][1])) for key in self.ranges.keys()}
+            self.transforms = {key : (lambda x, key=key: self.transform_to_infinite_from_range(x, self.ranges[key])) for key in self.ranges.keys()}
+            self.inverse_transforms = {key : (lambda x, key=key: self.inverse_transform_from_infinite_from_range(x, self.ranges[key])) for key in self.ranges.keys()}
+
+    def transform_to_infinite_from_range(self, x, ranges):
+        if ranges == 'infinite':
+            return x
+        else:
+            return self.transform_to_infinite(x, ranges[0], ranges[1])
+
+    def inverse_transform_from_infinite_from_range(self, x, ranges):
+        if ranges == 'infinite':
+            return x
+        else:
+            return self.inverse_transform_from_infinite(x, ranges[0], ranges[1])
+
 
     def transform(self, x, suffix = ''):
         self.compute_transforms()
@@ -84,7 +97,7 @@ class DomainChanger(LogisticTransform):
         return new_x
 
     def inverse_log_jacobian(self, x):
-        return self.jnp.sum(self.jnp.array([self.log_jacobian_determinant(self.ranges[key], x[key]) for key in x.keys()]))
+        return self.jnp.sum(self.jnp.array([jnp.sum(self.log_jacobian_determinant(self.ranges[key], x[key])) for key in x.keys()]))
 
     def logprob_wrapped(self, logprob_func):
         def likelihood_func(y):
