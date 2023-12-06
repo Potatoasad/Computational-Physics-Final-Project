@@ -9,8 +9,9 @@ The purpose of our project is
 1. to package our own _Markov Chain Monte Carlo_ algorithm and existing _Hamiltonian Monte Carlo_ algorithm from `blackjax` library into a single class interface, and
 2. to demonstrate the ease of use of out interface and the utility of the sampling algorithms via the following examples of,
    1. Phase transition in classical soft-sphere packing problem
-   2. Phase transition in 1D quantum spin Hamiltonians
-   3. Black hole parameter estimation using real observatory data from LIGO
+      1. Applications to classical error correcting codes
+   3. Phase transition in 1D quantum spin Hamiltonians
+   4. Black hole parameter estimation using real observatory data from LIGO
   
 <img src="https://github.com/Potatoasad/Computational-Physics-Final-Project/blob/39bbde60f8c7aaaa12ae8335676c1171b61840f0/soft_sphere_phase_transition.png" width="1000">
 <img src="https://github.com/Potatoasad/Computational-Physics-Final-Project/blob/f86e753d90dcba1eb9c4bcf7cc486f748d8268ee/spin_chain_phase_transition.png" width="1000">
