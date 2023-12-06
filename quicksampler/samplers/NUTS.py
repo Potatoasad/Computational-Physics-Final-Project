@@ -13,7 +13,16 @@ import blackjax
 
 from .DomainChanger import DomainChanger
 
+def convert_to_jax_array(dictionary):
+    for key, value in dictionary.items():
+        if isinstance(value, (float, int)):  # Check if the value is a float or int
+            dictionary[key] = jnp.array([value])  # Replace with a JAX array of size 1
+    return dictionary
+
 class NUTS:
+    """
+    Solves a problem specified by a likelihood object using the NUTS sampler. 
+    """
     def __init__(self, likelihood, init_position, limits=None,
                  step_size=1e-3, inverse_mass_matrix=None, rng_key=None, 
                  warmup_steps=100):
@@ -21,7 +30,7 @@ class NUTS:
             rng_key = jax.random.key(np.random.randint(2**32))
 
         if limits is None:
-            self.domain_changer = DomainChanger({key : 'infinite' for key in init_position.keys()})
+            self.domain_changer = DomainChanger({key : 'infinite' for key in init_position.keys()}, backend='JAX')
         else:
             limit_dict = {}
             for key in init_position:
@@ -29,19 +38,16 @@ class NUTS:
                     limit_dict[key] = limits[key]
                 else:
                     limit_dict[key] = 'infinite'
-            self.domain_changer = DomainChanger(limit_dict)
+            self.domain_changer = DomainChanger(limit_dict, backend='JAX')
 
         self.likelihood = likelihood                                # likelihood object
         self.step_size = step_size                                  # stepsize (at the moment it doesn't matter)
         self.rng_key = rng_key                                      # key
 
-        def likelihood_func(x):
-            #self.domain_changer.inverse_transform_in_place(x)
-            return self.likelihood.logpdf(x)
-
-        self.likelihood_func = lambda x: likelihood_func(x)  # likelihood function
-        my_init = init_position.copy()
-        #self.domain_changer.transform_in_place(my_init)
+        self.likelihood_func = self.domain_changer.logprob_wrapped(self.likelihood.logpdf)#lambda x: likelihood_func(x)  # likelihood function
+        #my_init = init_position.copy()
+        my_init = self.domain_changer.transform(convert_to_jax_array(init_position))
+        self.num_samples = None
         #print(init_position, my_init)
         self.init_position = my_init
         self.warmup_steps = warmup_steps
@@ -49,11 +55,13 @@ class NUTS:
         ## Set up the warmup for the HMC sampler
         warmup = blackjax.window_adaptation(blackjax.nuts, self.likelihood_func)
         rng_key, warmup_key, sample_key = jax.random.split(rng_key, 3)
-        (self._state_init, parameters), _ = warmup.run(warmup_key, self.init_position, num_steps=warmup_steps)
+        (self._state_init, self.parameters), _ = warmup.run(warmup_key, self.init_position, num_steps=warmup_steps)
 
         # the kernel performs one step
-        self.kernel = blackjax.nuts(self.likelihood_func, **parameters).step
+        self.kernel = blackjax.nuts(self.likelihood_func, **self.parameters).step
         self.states = []
+
+        self.positions = None
 
     def step(self, rng_key, x):
         return self.kernel(rng_key, x)
@@ -75,18 +83,27 @@ class NUTS:
         return self.states            
 
     def run(self, num_samples=100):
-        self.states = []
-
+        self.num_samples = num_samples
         self.rng_key = jax.random.key(np.random.randint(2**16)) 
-
-        ## Set up the warmup for the HMC sampler
-        warmup = blackjax.window_adaptation(blackjax.nuts, self.likelihood_func)
-        rng_key, warmup_key, sample_key = jax.random.split(self.rng_key, 3)
-        (self._state_init, parameters), _ = warmup.run(warmup_key, self.init_position, num_steps=self.warmup_steps)
-
-        self.kernel = blackjax.nuts(self.likelihood_func, **parameters).step
-        self.states = []
+        self.rng_key, sample_key = jax.random.split(self.rng_key)
         
         self.inference_loop(num_samples, sample_key=sample_key)
-        return pd.DataFrame(self.states.position)
+
+        positions = self.domain_changer.inverse_transform(self.states.position)
+        self.positions = positions
+        return self.result
+
+    @property
+    def result(self):
+        if self.num_samples is None:
+            return None
+
+        def replace_array_with_float(val):
+            if val.shape == (1,):
+                return float(val[0])
+            else:
+                return val
+        return {key: [replace_array_with_float(value[i]) for i in range(self.num_samples)] for (key, value) in self.positions.items()}
+        
+    
         
