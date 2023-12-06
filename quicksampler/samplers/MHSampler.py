@@ -180,6 +180,8 @@ class MHSampler:
     from a target distribution specified by a likelihood function. It works with both
     'numpy' and 'JAX' backends.
 
+    Samplers will accept an object with a logpdf method like the following:
+
     Parameters
     ----------
     likelihood : object
@@ -194,23 +196,6 @@ class MHSampler:
         The random number generator key, defaults to None.
     backend : str, optional
         The backend for computation ('numpy' or 'JAX'), defaults to 'numpy'.
-
-    Methods
-    -------
-    __init__(self, likelihood, init_position, step_size=1, limits=None, rng_key=None, backend='numpy')
-        Initialize the Metropolis-Hastings sampler.
-
-    accept_reject(self, p_accept)
-        Accept or reject a proposed state based on the acceptance probability.
-
-    step(self, x, max_rejects=MAX_REJECTS_DEFAULT)
-        Perform a single Metropolis-Hastings step to generate a new state.
-
-    run(self, n_steps=1000, max_rejects=MAX_REJECTS_DEFAULT)
-        Run the Metropolis-Hastings sampler for a specified number of steps.
-
-    result
-        Get the result of the sampler in a dictionary format.
     """
     def __init__(self, likelihood, init_position, step_size=1, limits=None, rng_key=None, backend='numpy'):
         """

@@ -10,7 +10,9 @@ Welcome to Computational Physics Final Project's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   ./BlackHolePopulationAnalysis
+   .. mdinclude:: ./README.md
+
+   ../BlackHolePopulationAnalysis
    modules
 
 
