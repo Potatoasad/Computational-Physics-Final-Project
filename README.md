@@ -1,6 +1,22 @@
-# Computational-Physics-Final-Project
- Final Project for the Computational Physics course at UT Austin
+# Sampling spheres and spins
+### Final Project, Computational Physics, Fall 2023
+_Aditi Pujar, Asad Hussain, Kody Anderson, Shivan Mittal_
 
+Imagine a distribution $\rho(\mathbf{x})$ over the domain $\mathbf{x} \in X \subset \mathbb{R}^n.$ Sampling algorithms are answers to the question: Given that we do not have exact knowledge of the functional form of $\rho,$ can we nonetheless generate samples from $\rho?$ In particular, _Markov Chain Monte Carlo_ algorithm is a sampling algorithm that only requires the knowledge of relative likelihood of two samples $\mathbf{x}_1$ and $\mathbf{x}_2$ drawn from the distribution $\rho,$ i.e. knowledge of ${\rm Likelihood} = \rho(\mathbf{x}_1) / \rho(\mathbf{x}_2)).$ _Hamiltonian Monte Carlo_ algorithm is another such sampling algorithm that further requires the knowledge of (a priori or empirically by differentiable ``code'') the gradient of the likelihood.
+Numerous Physical problems can benefit from sampling algorithms. These range from (Classical and Quantum) many-body problems to data analysis for large scale Physics experiments (LIGO, CERN).
+
+The purpose of our project is 
+1. to package our own _Markov Chain Monte Carlo_ algorithm and existing _Hamiltonian Monte Carlo_ algorithm from `blackjax` library into a single class interface, and
+2. to demonstrate the ease of use of out interface and the utility of the sampling algorithms via the following examples of,
+   1. Phase transition in classical soft-sphere packing problem
+   2. Phase transition in 1D quantum spin Hamiltonians
+   3. Black hole parameter estimation using real observatory data from LIGO
+  
+![Soft sphere phase transition]()
+![Quantum spin phase transition]()
+![Black hole parameter estimation]()
+
+<!---
 ### Ideas
 Project ideas
 - [x] Sampling + gradient descent + packing problems + glass phase transition
@@ -62,4 +78,4 @@ class StateSpaceAnimation
  - samples
  - animate() 
 ```
-
+--->
