@@ -13,7 +13,7 @@ The purpose of our project is
    3. Black hole parameter estimation using real observatory data from LIGO
   
 <img src="https://github.com/Potatoasad/Computational-Physics-Final-Project/blob/39bbde60f8c7aaaa12ae8335676c1171b61840f0/soft_sphere_phase_transition.png" width="1000">
-<img src="https://github.com/Potatoasad/Computational-Physics-Final-Project/blob/a8313e5cbb88ca7a74b00ddd02a3aba6781930fe/spin_chain_phase_transition.png" width="1000">
+<img src="https://github.com/Potatoasad/Computational-Physics-Final-Project/blob/f86e753d90dcba1eb9c4bcf7cc486f748d8268ee/spin_chain_phase_transition.png" width="1000">
 ![Black hole parameter estimation]()
 
 <!---
