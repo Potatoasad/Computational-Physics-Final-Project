@@ -7,12 +7,38 @@ import jax
 import jax.numpy as jnp
 
 def convert_to_jax_array(dictionary):
+    """
+    Convert selected values in a dictionary to JAX arrays.
+
+    Parameters
+    ----------
+    dictionary : dict
+        The input dictionary containing values to be converted.
+
+    Returns
+    -------
+    dict
+        A new dictionary with selected values converted to JAX arrays.
+    """
     for key, value in dictionary.items():
         if isinstance(value, (float, int)):  # Check if the value is a float or int
             dictionary[key] = jnp.array([value])  # Replace with a JAX array of size 1
     return dictionary
 
 def create_rng_key(backend):
+    """
+    Create a random number generator key based on the backend.
+
+    Parameters
+    ----------
+    backend : str
+        The backend for computation ('numpy' or 'JAX').
+
+    Returns
+    -------
+    array
+        A random number generator key.
+    """
     if backend == 'numpy':
         return np.random.seed(np.random.randint(2**32))
     elif backend == 'JAX':
@@ -21,7 +47,41 @@ def create_rng_key(backend):
         raise ValueError(f"Do not recognize the {backend} backend")
 
 class AbstractProposal:
+    """
+    Abstract proposal for generating new states based on the current state.
+
+    This class serves as a base for specific proposal distributions. It defines
+    the common functionality and interface for proposing new values for variables
+    in the state dictionary.
+
+    Parameters
+    ----------
+    step_size : float
+        The step size for the proposal.
+    backend : str, optional
+        The backend for computation ('numpy' or 'JAX'), defaults to 'numpy'.
+    rng_key : array, optional
+        The random number generator key, defaults to None.
+
+    Methods
+    -------
+    __call__(x)
+        Generate a new state based on the current state 'x'.
+
+    """
     def __init__(self, step_size, backend='numpy', rng_key=None):
+        """
+        Initialize an abstract proposal.
+
+        Parameters
+        ----------
+        step_size : float
+            The step size for the proposal.
+        backend : str, optional
+            The backend for computation ('numpy' or 'JAX'), defaults to 'numpy'.
+        rng_key : array, optional
+            The random number generator key, defaults to None.
+        """
         self.step_size = step_size
         self.keys = None
         self.backend = backend
@@ -37,21 +97,52 @@ class AbstractProposal:
 
 
 class SphericalGaussianProposal(AbstractProposal):
+    """
+    Spherical Gaussian proposal for generating new states.
+
+    This class defines a proposal distribution where the next step is sampled from
+    a spherical Gaussian distribution with a specified step size.
+
+    Parameters
+    ----------
+    step_size : float
+        The step size for the proposal.
+    backend : str, optional
+        The backend for computation ('numpy' or 'JAX'), defaults to 'numpy'.
+    rng_key : array, optional
+        The random number generator key, defaults to None.
+
+    """
     def __init__(self, step_size, backend='numpy', rng_key=None):
         super().__init__(step_size, backend=backend, rng_key=rng_key)
 
     def next_step(self, key, value):
         """
-        Computes the next proposed value for for any variable inside the state dictionay x. 
+        Compute the next proposed value for any variable inside the state dictionary x.
 
-        Within the state dictionary x (e.g. x = {'mu': [0.1, 0.2], 'kappa': 0.3}), each variable
-        has a value that parameterizes its current state. This function will take in a value and 
-        compute the next step in the proposal. 
+        Within the state dictionary x (e.g., x = {'mu': [0.1, 0.2], 'kappa': 0.3}),
+        each state variable (the key) has a value that parameterizes its current state.
+        This function will take in a value and compute the change in position needed
+        to go to the next step in the proposal.
 
         e.g. 
-        >>> x = {'mu': [0.1, 0.2], 'kappa': 0.3}
-        >>> SphericalGaussianProposal(0.1)
-        >>> SphericalGaussianProposal.next_step('mu', x['mu']) # random normal with the right shape. 
+
+        >>> x = {'mu': np.array([0.1, 0.2]), 'kappa': 0.3}
+        >>> SphericalGaussianProposal(step_size=0.1)
+        >>> SphericalGaussianProposal.next_step('mu', x['mu']) # random normal proposal with the right shape. 
+
+        Parameters
+        ----------
+        key : str
+            The variable key.
+        value : float, array-like
+            The current value of the variable.
+
+        Returns
+        -------
+        array
+            The next proposed value for the variable.
+
         """
         if self.backend == 'numpy':
             if type(value) == np.ndarray:
@@ -82,8 +173,64 @@ MAX_REJECTS_DEFAULT = 10000
 
 
 class MHSampler:
+    """
+    Metropolis-Hastings sampler for generating samples from a distribution.
+
+    This class implements the Metropolis-Hastings algorithm for generating samples
+    from a target distribution specified by a likelihood function. It works with both
+    'numpy' and 'JAX' backends.
+
+    Parameters
+    ----------
+    likelihood : object
+        The likelihood object representing the target distribution.
+    init_position : dict
+        The initial position in the state space.
+    step_size : float, optional
+        The step size for the Metropolis-Hastings proposal, defaults to 1.
+    limits : dict, optional
+        The limits for variables in the state space, defaults to None.
+    rng_key : array, optional
+        The random number generator key, defaults to None.
+    backend : str, optional
+        The backend for computation ('numpy' or 'JAX'), defaults to 'numpy'.
+
+    Methods
+    -------
+    __init__(self, likelihood, init_position, step_size=1, limits=None, rng_key=None, backend='numpy')
+        Initialize the Metropolis-Hastings sampler.
+
+    accept_reject(self, p_accept)
+        Accept or reject a proposed state based on the acceptance probability.
+
+    step(self, x, max_rejects=MAX_REJECTS_DEFAULT)
+        Perform a single Metropolis-Hastings step to generate a new state.
+
+    run(self, n_steps=1000, max_rejects=MAX_REJECTS_DEFAULT)
+        Run the Metropolis-Hastings sampler for a specified number of steps.
+
+    result
+        Get the result of the sampler in a dictionary format.
+    """
     def __init__(self, likelihood, init_position, step_size=1, limits=None, rng_key=None, backend='numpy'):
-        
+        """
+        Initialize the Metropolis-Hastings sampler.
+
+        Parameters
+        ----------
+        likelihood : object
+            The likelihood object representing the target distribution.
+        init_position : dict
+            The initial position in the state space.
+        step_size : float, optional
+            The step size for the Metropolis-Hastings proposal, defaults to 1.
+        limits : dict, optional
+            The limits for variables in the state space, defaults to None.
+        rng_key : array, optional
+            The random number generator key, defaults to None.
+        backend : str, optional
+            The backend for computation ('numpy' or 'JAX'), defaults to 'numpy'.
+        """
         self.likelihood = likelihood
         self.backend = backend
         self.rng_key = rng_key
@@ -109,14 +256,7 @@ class MHSampler:
         self.init_position_transformed = self.domain_changer.transform(self.init_position)
         self.likelihood_func = self.domain_changer.logprob_wrapped(self.likelihood.logpdf)
 
-        #self.mu_sample = self.likelihood.mu_sample
-        #self.var_sample = self.likelihood.var_sample
-        #self.dim = self.mu_sample.shape[0]
-
-        # should every model also have a data? or atleast mean and variance? 
-        # it will be an array because each sample will have exactly same feature vectors
-
-        self.step_size = step_size      # stepsize can be vector as long as dimensions match
+        self.step_size = step_size    
         self.proposal = SphericalGaussianProposal(self.step_size, rng_key=self.rng_key, backend=self.backend)
         
         if rng_key is None:
@@ -134,16 +274,21 @@ class MHSampler:
         self.running_acceptances = 0
         self.total_steps = 0  
         self.num_samples = None                            
-        
-        #if proposal is None:
-        #    proposal = lambda mu_trial: norm(mu_trial,self.step_size*np.ones(self.dim)).rvs()
-        #self.proposal = proposal
-
-        #if prior is None:
-        #    prior = lambda mu_trial: norm(self.mu_sample,self.var_sample).logpdf(mu_trial)
-        #self.prior = prior
 
     def accept_reject(self, p_accept):
+        """
+        Accept or reject a proposed state based on the acceptance probability.
+
+        Parameters
+        ----------
+        p_accept : float
+            The probability of accepting the proposed state.
+
+        Returns
+        -------
+        bool
+            True if the proposed state is accepted, False otherwise.
+        """
         if self.backend == 'numpy':
             return (np.random.rand() < p_accept)
         elif self.backend == 'JAX':
@@ -151,6 +296,21 @@ class MHSampler:
 
 
     def step(self, x, max_rejects = MAX_REJECTS_DEFAULT): 
+        """
+        Perform a single Metropolis-Hastings step to generate a new state.
+
+        Parameters
+        ----------
+        x : dict
+            The current state.
+        max_rejects : int, optional
+            The maximum number of rejections before raising an error, defaults to MAX_REJECTS_DEFAULT.
+
+        Returns
+        -------
+        dict
+            The new proposed state.
+        """
         accept = False
         rejects = 0
 
@@ -159,9 +319,6 @@ class MHSampler:
 
             log_likelihood_current = self.likelihood_func(x)
             log_likelihood_proposal = self.likelihood_func(x_proposal)
-
-            #log_prior_current  = self.prior(mu_current)
-            #log_prior_proposal = self.prior(mu_proposal)
 
             p_current = log_likelihood_current #+ log_prior_current
             p_proposal = log_likelihood_proposal #+ log_prior_proposal 
@@ -186,6 +343,21 @@ class MHSampler:
                     raise ValueError("The next proposal has been rejected {max_rejects} times! try changing something")       
 
     def run(self, n_steps = 1000, max_rejects=MAX_REJECTS_DEFAULT):
+        """
+        Run the Metropolis-Hastings sampler for a specified number of steps.
+
+        Parameters
+        ----------
+        n_steps : int, optional
+            The number of Metropolis-Hastings steps to run, defaults to 1000.
+        max_rejects : int, optional
+            The maximum number of rejections before raising an error, defaults to MAX_REJECTS_DEFAULT.
+
+        Returns
+        -------
+        dict
+            The result of the sampler in a dictionary format.
+        """
         self.num_samples = n_steps
         y = self.init_position_transformed
         self.history.append(self.domain_changer.inverse_transform(self.init_position_transformed))
@@ -208,6 +380,14 @@ class MHSampler:
 
     @property
     def result(self):
+        """
+        Get the result of the sampler in a dictionary format.
+
+        Returns
+        -------
+        dict
+            The result of the sampler in a dictionary format.
+        """
         if self.num_samples is None:
             return None
 
