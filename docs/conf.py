@@ -35,7 +35,13 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'nbsphinx',
-     'myst_parser',
+    'sphinx.ext.mathjax',
+    'myst_parser',
+]
+
+myst_enable_extensions = [
+    "dollarmath",
+    # other MyST extensions if needed...
 ]
 
 # Add any paths that contain templates here, relative to this directory.

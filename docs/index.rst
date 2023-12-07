@@ -6,15 +6,19 @@
 Welcome to Computational Physics Final Project's documentation!
 ===============================================================
 
+Contents:
+---------
+
+.. include:: ../README.md
+   :parser: myst_parser.sphinx_
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
-   .. mdinclude:: ./README.md
-
-   ../BlackHolePopulationAnalysis
+   BayesianInferenceTests
+   BlackHolePopulationAnalysis
    modules
-
 
 Indices and tables
 ==================
