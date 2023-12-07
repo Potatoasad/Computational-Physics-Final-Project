@@ -27,6 +27,11 @@ jobs:
       - name: Create .nojekyll file
         run: |
           touch _build/.nojekyll
+      - name: Copy PNG Images
+        run: |
+          cp *.png _build/
+          cp *.jpeg _build/
+          cp *.jpg _build/
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
