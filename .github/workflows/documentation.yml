@@ -18,9 +18,10 @@ jobs:
           pip install numpy pandas scipy jax jaxlib tqdm blackjax
           pip install sphinx sphinx_rtd_theme myst_parser nbsphinx pygments myst_parser
           pip install ipython
-      - name: Clean before build
+      - name: Clean before build and transfer notebooks
         run: |
           rm -rf _build/
+          cp *.ipynb ./docs
       - name: Sphinx build
         run: |
           sphinx-apidoc -o ./docs ./quicksampler
