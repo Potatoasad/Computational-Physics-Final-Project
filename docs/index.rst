@@ -6,14 +6,13 @@
 Welcome to Computational Physics Final Project's documentation!
 ===============================================================
 
-Contents:
----------
+
 
 .. include:: ../README.md
    :parser: myst_parser.sphinx_
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 0
    :caption: Contents:
 
    MetropolisHastingsSampler_Tests.ipynb
