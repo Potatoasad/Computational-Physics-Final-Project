@@ -7,7 +7,7 @@ import jax
 import jax.numpy as jnp
 
 def convert_to_jax_array(dictionary):
-    """
+    r"""
     Convert selected values in a dictionary to JAX arrays.
 
     Parameters
@@ -26,7 +26,7 @@ def convert_to_jax_array(dictionary):
     return dictionary
 
 def create_rng_key(backend):
-    """
+    r"""
     Create a random number generator key based on the backend.
 
     Parameters
@@ -47,7 +47,7 @@ def create_rng_key(backend):
         raise ValueError(f"Do not recognize the {backend} backend")
 
 class AbstractProposal:
-    """
+    r"""
     Abstract proposal for generating new states based on the current state.
 
     This class serves as a base for specific proposal distributions. It defines
@@ -70,7 +70,7 @@ class AbstractProposal:
 
     """
     def __init__(self, step_size, backend='numpy', rng_key=None):
-        """
+        r"""
         Initialize an abstract proposal.
 
         Parameters
@@ -97,7 +97,7 @@ class AbstractProposal:
 
 
 class SphericalGaussianProposal(AbstractProposal):
-    """
+    r"""
     Spherical Gaussian proposal for generating new states.
 
     This class defines a proposal distribution where the next step is sampled from
@@ -117,7 +117,7 @@ class SphericalGaussianProposal(AbstractProposal):
         super().__init__(step_size, backend=backend, rng_key=rng_key)
 
     def next_step(self, key, value):
-        """
+        r"""
         Compute the next proposed value for any variable inside the state dictionary x.
 
         Within the state dictionary x (e.g., x = {'mu': [0.1, 0.2], 'kappa': 0.3}),
@@ -173,7 +173,7 @@ MAX_REJECTS_DEFAULT = 10000
 
 
 class MHSampler:
-    """
+    r"""
     Metropolis-Hastings sampler for generating samples from a distribution.
 
     This class implements the Metropolis-Hastings algorithm for generating samples
@@ -198,7 +198,7 @@ class MHSampler:
         The backend for computation ('numpy' or 'JAX'), defaults to 'numpy'.
     """
     def __init__(self, likelihood, init_position, step_size=1, limits=None, rng_key=None, backend='numpy'):
-        """
+        r"""
         Initialize the Metropolis-Hastings sampler.
 
         Parameters
@@ -261,7 +261,7 @@ class MHSampler:
         self.num_samples = None                            
 
     def accept_reject(self, p_accept):
-        """
+        r"""
         Accept or reject a proposed state based on the acceptance probability.
 
         Parameters
@@ -281,7 +281,7 @@ class MHSampler:
 
 
     def step(self, x, max_rejects = MAX_REJECTS_DEFAULT): 
-        """
+        r"""
         Perform a single Metropolis-Hastings step to generate a new state.
 
         Parameters
@@ -289,7 +289,7 @@ class MHSampler:
         x : dict
             The current state.
         max_rejects : int, optional
-            The maximum number of rejections before raising an error, defaults to MAX_REJECTS_DEFAULT.
+            The maximum number of rejections before raising an error, defaults to 10000.
 
         Returns
         -------
@@ -328,7 +328,7 @@ class MHSampler:
                     raise ValueError("The next proposal has been rejected {max_rejects} times! try changing something")       
 
     def run(self, n_steps = 1000, max_rejects=MAX_REJECTS_DEFAULT):
-        """
+        r"""
         Run the Metropolis-Hastings sampler for a specified number of steps.
 
         Parameters
@@ -365,7 +365,7 @@ class MHSampler:
 
     @property
     def result(self):
-        """
+        r"""
         Get the result of the sampler in a dictionary format.
 
         Returns

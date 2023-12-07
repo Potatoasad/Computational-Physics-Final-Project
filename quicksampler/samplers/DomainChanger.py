@@ -27,7 +27,7 @@ class LogisticTransform:
     """
 
     def __init__(self, backend, epsilon=1e-5):
-        """
+        r"""
         Initialize the LogisticTransform instance.
 
         Parameters
@@ -48,7 +48,7 @@ class LogisticTransform:
         self.epsilon = epsilon
 
     def transform_to_infinite(self, x, a, b):
-        """Transforms from :math:`[a,b]` to :math:`(-\infty, +\infty)`
+        r"""Transforms from :math:`[a,b]` to :math:`(-\infty, +\infty)`
 
         Parameters
         ----------
@@ -101,7 +101,7 @@ class LogisticTransform:
         return x
 
     def log_jacobian_determinant(self, variable_range, y):
-        """Compute the logarithm of the Jacobian determinant of the transformation.
+        r"""Compute the logarithm of the Jacobian determinant of the transformation.
 
         Parameters
         ----------
@@ -174,7 +174,7 @@ class DomainChanger(LogisticTransform):
         self.inverse_transforms = None
 
     def compute_transforms(self):
-        """
+        r"""
         Compute the transformations and inverse transformations for each variable range.
         """
         if (self.transforms is None) or (self.inverse_transforms is None):
@@ -203,7 +203,7 @@ class DomainChanger(LogisticTransform):
             return self.transform_to_infinite(x, ranges[0], ranges[1])
 
     def inverse_transform_from_infinite_from_range(self, x, ranges):
-        """
+        r"""
         Inverse transform variables from (-∞, +∞) to a specified range.
 
         Parameters
@@ -225,7 +225,7 @@ class DomainChanger(LogisticTransform):
 
 
     def transform(self, x, suffix = ''):
-        """
+        r"""
         Transform variables in the given dictionary to the infinite domain.
 
         Parameters
@@ -252,7 +252,7 @@ class DomainChanger(LogisticTransform):
         return new_x
 
     def inverse_transform(self, x, suffix=''):
-        """
+        r"""
         Inverse transform variables in the given dictionary from the infinite domain.
 
         Parameters
@@ -279,7 +279,7 @@ class DomainChanger(LogisticTransform):
         return new_x
 
     def inverse_log_jacobian(self, x):
-        """
+        r"""
         Compute the sum of the logarithm of Jacobian determinants for each variable.
 
         Parameters
@@ -295,7 +295,7 @@ class DomainChanger(LogisticTransform):
         return self.jnp.sum(self.jnp.array([jnp.sum(self.log_jacobian_determinant(self.ranges[key], x[key])) for key in x.keys()]))
 
     def logprob_wrapped(self, logprob_func):
-        """
+        r"""
         Create a wrapped likelihood function that includes the inverse log Jacobian term.
 
         Parameters

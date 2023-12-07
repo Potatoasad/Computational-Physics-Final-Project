@@ -16,8 +16,11 @@ Contents:
    :maxdepth: 1
    :caption: Contents:
 
-   BayesianInferenceTests
-   BlackHolePopulationAnalysis
+   ../MetropolisHastingsSampler_Tests.ipynb
+   ../BayesianInferenceTests.ipynb
+   ../softspheres_blackjax_phase_transition.ipynb
+   ../BlackHolePopulationAnalysis.ipynb
+   ../gossetbravyi_spin_chain_blackjax_phase_transition.ipynb
    modules
 
 Indices and tables

@@ -14,7 +14,7 @@ import blackjax
 from .DomainChanger import DomainChanger
 
 def convert_to_jax_array(dictionary):
-    """
+    r"""
     Convert selected values in a dictionary to JAX arrays.
 
     Parameters
@@ -33,13 +33,13 @@ def convert_to_jax_array(dictionary):
     return dictionary
 
 class NUTS:
-    """
+    r"""
     Solves a problem specified by a likelihood object using the NUTS sampler. 
     """
     def __init__(self, likelihood, init_position, limits=None,
                  step_size=1e-3, inverse_mass_matrix=None, rng_key=None, 
                  warmup_steps=100):
-        """
+        r"""
         Initialize the NUTS sampler.
 
         Parameters
@@ -146,7 +146,7 @@ class NUTS:
         return self.states            
 
     def run(self, num_samples=100):
-        """
+        r"""
         Run the NUTS sampler to obtain samples.
 
         Parameters
@@ -171,7 +171,7 @@ class NUTS:
 
     @property
     def result(self):
-        """
+        r"""
         Get the result of the sampler.
 
         Returns
