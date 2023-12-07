@@ -19,7 +19,7 @@ Numerous Physical problems can benefit from sampling algorithms. These range fro
    1. [Phase transition in classical soft-sphere packing problem](softspheres_blackjax_phase_transition.ipynb)
       1. Applications to classical error correcting codes
    2. [Phase transition in 1D quantum spin Hamiltonians](gossetbravyi_spin_chain_blackjax_phase_transition.ipynb)
-   3. Black hole parameter estimation using real observatory data from LIGO
+   3. [Black hole parameter estimation using real observatory data from LIGO](BlackHolePopulationAnalysis.ipynb)
 
 ### Plots from our work
 <p>
@@ -34,7 +34,7 @@ Numerous Physical problems can benefit from sampling algorithms. These range fro
 	</figure>
   <figure>
 		<img src="blackholeinference.png" width="800">
-		<figcaption> Posterior distribution for the hyperparameters of a population model computed by performing hierarchically inference on samples from every confident LIGO binary black hole detection</figcaption> 
+		<figcaption> Posterior distribution for the hyperparameters of a population model computed by performing hierarchical inference on samples from every confident LIGO binary black hole detection</figcaption> 
 	</figure>
 </p>
 

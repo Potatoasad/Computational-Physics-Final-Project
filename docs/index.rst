@@ -15,9 +15,9 @@ Welcome to Computational Physics Final Project's documentation!
    :maxdepth: 0
    :caption: Contents:
 
+   softspheres_blackjax_phase_transition.ipynb
    MetropolisHastingsSampler_Tests.ipynb
    BayesianInferenceTests.ipynb
-   softspheres_blackjax_phase_transition.ipynb
    BlackHolePopulationAnalysis.ipynb
    gossetbravyi_spin_chain_blackjax_phase_transition.ipynb
    modules
