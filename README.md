@@ -14,9 +14,9 @@ Numerous Physical problems can benefit from sampling algorithms. These range fro
 
 1. to package our own _Markov Chain Monte Carlo_ algorithm and existing _Hamiltonian Monte Carlo_ algorithm from `blackjax` library into a single class interface, and
 2. to demonstrate the ease of use of out interface and the utility of the sampling algorithms via the following examples of,
-   1. Phase transition in classical soft-sphere packing problem
+   1. [Phase transition in classical soft-sphere packing problem](softspheres_blackjax_phase_transition.ipynb)
       1. Applications to classical error correcting codes
-   2. Phase transition in 1D quantum spin Hamiltonians
+   2. [Phase transition in 1D quantum spin Hamiltonians](gossetbravyi_spin_chain_blackjax_phase_transition.ipynb)
    3. Black hole parameter estimation using real observatory data from LIGO
 
 ### Plots from our work
