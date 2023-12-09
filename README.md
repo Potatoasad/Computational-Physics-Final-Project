@@ -21,6 +21,7 @@ Numerous Physical problems can benefit from sampling algorithms. These range fro
       1. Applications to classical error correcting codes
    2. [Phase transition in 1D quantum spin Hamiltonians](gossetbravyi_spin_chain_blackjax_phase_transition.ipynb)
    3. [Black hole parameter estimation using real observatory data from LIGO](BlackHolePopulationAnalysis.ipynb)
+   4. [Phase transitions in 2D Ising ferromagnets and spin glasses](https://github.com/Potatoasad/Computational-Physics-Final-Project/blob/main/ising_spin_hamiltonians.ipynb)
 
 ### Plots from our work
 <p>
@@ -36,6 +37,16 @@ Numerous Physical problems can benefit from sampling algorithms. These range fro
   <figure>
 		<img src="blackholeinference.png" width="800">
 		<figcaption> Posterior distribution for the hyperparameters of a population model computed by performing hierarchical inference on samples from every confident LIGO binary black hole detection</figcaption> 
+	</figure>
+	<br><br><br><br>
+	<figure>
+		<img src="spin_glass_transition.png" width="800">
+		<figcaption> Phase transition in spin glasses upon decreasing temperature, reflected in both - the Edwards Anderson Order parameter and the rugged energy landscapes </figcaption> 
+	</figure>
+	<br><br><br><br>
+	<figure>
+		<img src="ferromagnet_transition.png" width="800">
+		<figcaption> Phase transition in 2D Ising model upon decreasing temperature </figcaption> 
 	</figure>
 </p>
 
