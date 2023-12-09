@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>quicksampler.samplers.DomainChanger &mdash; Computational Physics Final Project 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Computational Physics Final Project
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../softspheres_blackjax_phase_transition.html">Soft-sphere packing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../MetropolisHastingsSampler_Tests.html">Continuous MH Sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../BayesianInferenceTests.html">Simple Bayesian Inference Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../BlackHolePopulationAnalysis.html">Inferring the Distribution of Gravitational Waves</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gossetbravyi_spin_chain_blackjax_phase_transition.html">1D Quantum spin chains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">quicksampler</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Computational Physics Final Project</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">quicksampler.samplers.DomainChanger</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for quicksampler.samplers.DomainChanger</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="LogisticTransform">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform">[docs]</a>
+<span class="k">class</span> <span class="nc">LogisticTransform</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implementation of the Logistic Transformation between spaces</span>
+
+<span class="sd">    If one wants to transform points using a logistic transformation from a</span>
+<span class="sd">    closed interval :math:`[a,b]` to :math:`(-\infty, +\infty)`. The</span>
+<span class="sd">    transformation is defined as:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">        f &amp;: [a,b] \to (-\infty, \infty) \\</span>
+<span class="sd">        f(x) &amp;= \log\left(\frac{\frac{x-a}{b-a}}{1 - \frac{x-a}{b-a}}\right) \\</span>
+<span class="sd">        f^{-1}(y) &amp;= \frac{b-a}{1+e^{-y}} + a</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    epsilon : :obj:`float`, default = 1e-5</span>
+<span class="sd">        Any input within :math:`\epsilon` of :math:`[a,b]` will be clipped onto the value </span>
+<span class="sd">        of the transformation at :math:`f(a + \epsilon)` or :math:`f(b - \epsilon)`</span>
+<span class="sd">    backend : :obj:`str`, optional</span>
+<span class="sd">        Will compute the transformation for JAX arrays if :obj:`&#39;JAX&#39;` and compute it for</span>
+<span class="sd">        numpy arrays if :obj:`&#39;numpy&#39;`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the LogisticTransform instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        backend : str</span>
+<span class="sd">            The backend for computation (&#39;JAX&#39; or &#39;numpy&#39;).</span>
+<span class="sd">        epsilon : float, optional</span>
+<span class="sd">            A small value for numerical stability, defaults to 1e-5.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>   <span class="c1"># JAX or numpy</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;JAX&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span> <span class="o">=</span> <span class="n">jnp</span>
+        <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;numpy&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span> <span class="o">=</span> <span class="n">np</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;backend </span><span class="si">{</span><span class="n">backend</span><span class="si">}</span><span class="s2"> not recognized&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">=</span> <span class="n">epsilon</span>
+
+<div class="viewcode-block" id="LogisticTransform.transform_to_infinite">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform.transform_to_infinite">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform_to_infinite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Transforms from :math:`[a,b]` to :math:`(-\infty, +\infty)`</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : :obj:`array` or :obj:`float` of from either JAX or numpy</span>
+<span class="sd">            The points to be transformed</span>
+<span class="sd">        a : :obj:`array` or :obj:`float` of from either JAX or numpy</span>
+<span class="sd">            The lower end of the bounded domain</span>
+<span class="sd">        b : :obj:`array` or :obj:`float` of from either JAX or numpy</span>
+<span class="sd">            The upper end of the bounded domain</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        y : :obj:`array` or :obj:`float` of size and type similar to x</span>
+<span class="sd">            The transformed points that now live in the infinite domain</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Normalize x to [0, 1]</span>
+        <span class="n">normalized_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span>
+    
+        <span class="c1"># Avoid division by zero or log of zero</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span>
+        <span class="n">normalized_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">normalized_x</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span>
+    
+        <span class="c1"># Transform to (-∞, +∞)</span>
+        <span class="n">infinite_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">normalized_x</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">normalized_x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">infinite_x</span></div>
+
+
+<div class="viewcode-block" id="LogisticTransform.inverse_transform_from_infinite">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform.inverse_transform_from_infinite">[docs]</a>
+    <span class="k">def</span> <span class="nf">inverse_transform_from_infinite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Inverse transforms from :math:`(-\infty, +\infty)` to :math:`[a,b]`</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        y : :obj:`array` or :obj:`float` from either JAX or numpy</span>
+<span class="sd">            The points in the infinite domain to be transformed back.</span>
+<span class="sd">        a : :obj:`array` or :obj:`float` from either JAX or numpy</span>
+<span class="sd">            The lower end of the bounded domain</span>
+<span class="sd">        b : :obj:`array` or :obj:`float` from either JAX or numpy</span>
+<span class="sd">            The upper end of the bounded domain</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        x : :obj:`array` or :obj:`float` of size and type similar to y</span>
+<span class="sd">            The transformed points back into the closed interval [a, b].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Transform from (-∞, +∞) to [0, 1]</span>
+        <span class="n">normalized_y</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">y</span><span class="p">))</span>
+        <span class="c1"># Inverse normalize to [a, b]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">normalized_y</span> <span class="o">*</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="LogisticTransform.log_jacobian_determinant">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform.log_jacobian_determinant">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_jacobian_determinant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_range</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the logarithm of the Jacobian determinant of the transformation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variable_range : str or list</span>
+<span class="sd">            If a string, should be &#39;infinite&#39; or a domain range represented as [a, b].</span>
+<span class="sd">            If a list, it represents the domain range [a, b].</span>
+<span class="sd">        y : :obj:`array` or :obj:`float` from either JAX or numpy</span>
+<span class="sd">            The points in the infinite domain.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        log_det : float</span>
+<span class="sd">            The logarithm of the Jacobian determinant of the transformation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">variable_range</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">([]):</span>
+            <span class="c1">## Is a domain range</span>
+            <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="n">variable_range</span>
+            <span class="n">logistic_value</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">y</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logistic_value</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">logistic_value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">variable_range</span> <span class="o">==</span> <span class="s1">&#39;infinite&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mf">0.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Do not understand the range </span><span class="si">{</span><span class="n">variable_range</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+</div>
+
+
+
+
+<div class="viewcode-block" id="DomainChanger">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger">[docs]</a>
+<span class="k">class</span> <span class="nc">DomainChanger</span><span class="p">(</span><span class="n">LogisticTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for transforming variables between different bounded domains using the Logistic Transformation.</span>
+
+<span class="sd">    If one wants to transform points using a logistic transformation from a</span>
+<span class="sd">    closed interval :math:`[a,b]` to :math:`(-\infty, +\infty)`. The</span>
+<span class="sd">    transformation is defined as:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">        f &amp;: [a,b] \to (-\infty, \infty) \\</span>
+<span class="sd">        f(x) &amp;= \log\left(\frac{\frac{x-a}{b-a}}{1 - \frac{x-a}{b-a}}\right) \\</span>
+<span class="sd">        f^{-1}(y) &amp;= \frac{b-a}{1+e^{-y}} + a</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ranges : dict</span>
+<span class="sd">        A dictionary specifying the variable ranges, where keys represent variable names and values</span>
+<span class="sd">        can be either &#39;infinite&#39; for unbounded variables or a list :obj:`[a, b]` representing the closed interval :obj`[a, b]`.</span>
+<span class="sd">    backend : str, optional</span>
+<span class="sd">        The backend for computation (&#39;JAX&#39; or &#39;numpy&#39;). Defaults to &#39;numpy&#39;.</span>
+<span class="sd">    epsilon : float, optional</span>
+<span class="sd">        A small value for numerical stability, defaults to 1e-5.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ranges</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;numpy&#39;</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the DomainChanger instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ranges : dict</span>
+<span class="sd">            A dictionary specifying the variable ranges.</span>
+<span class="sd">        backend : str, optional</span>
+<span class="sd">            The backend for computation (&#39;JAX&#39; or &#39;numpy&#39;). Defaults to &#39;numpy&#39;.</span>
+<span class="sd">        epsilon : float, optional</span>
+<span class="sd">            A small value for numerical stability, defaults to 1e-5.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ranges</span> <span class="o">=</span> <span class="n">ranges</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inverse_transforms</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="DomainChanger.compute_transforms">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.compute_transforms">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the transformations and inverse transformations for each variable range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inverse_transforms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span> <span class="p">:</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_to_infinite_from_range</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inverse_transforms</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span> <span class="p">:</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_transform_from_infinite_from_range</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span></div>
+
+
+<div class="viewcode-block" id="DomainChanger.transform_to_infinite_from_range">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.transform_to_infinite_from_range">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform_to_infinite_from_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">ranges</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform variables from a specified range to (-∞, +∞).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : float or array-like</span>
+<span class="sd">            The input variable(s) to be transformed.</span>
+<span class="sd">        ranges : str or list</span>
+<span class="sd">            The specified variable range.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        transformed_x : float or array-like</span>
+<span class="sd">            The transformed variable(s).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ranges</span> <span class="o">==</span> <span class="s1">&#39;infinite&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_to_infinite</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ranges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ranges</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="DomainChanger.inverse_transform_from_infinite_from_range">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.inverse_transform_from_infinite_from_range">[docs]</a>
+    <span class="k">def</span> <span class="nf">inverse_transform_from_infinite_from_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">ranges</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inverse transform variables from (-∞, +∞) to a specified range.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : float or array-like</span>
+<span class="sd">            The input variable(s) in the infinite domain.</span>
+<span class="sd">        ranges : str or list</span>
+<span class="sd">            The specified variable range.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        transformed_x : float or array-like</span>
+<span class="sd">            The inverse-transformed variable(s).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ranges</span> <span class="o">==</span> <span class="s1">&#39;infinite&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_transform_from_infinite</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ranges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ranges</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="DomainChanger.transform">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.transform">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform variables in the given dictionary to the infinite domain.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : dict</span>
+<span class="sd">            A dictionary containing variable names as keys and their corresponding values.</span>
+<span class="sd">        suffix : str, optional</span>
+<span class="sd">            A suffix to append to the transformed variable names. Defaults to an empty string.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        new_x : dict</span>
+<span class="sd">            A dictionary containing transformed variables with updated names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_transforms</span><span class="p">()</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">new_x</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;infinite&#39;</span><span class="p">:</span>
+                <span class="n">new_x</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_x</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">[</span><span class="n">key</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">new_x</span></div>
+
+
+<div class="viewcode-block" id="DomainChanger.inverse_transform">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.inverse_transform">[docs]</a>
+    <span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inverse transform variables in the given dictionary from the infinite domain.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : dict</span>
+<span class="sd">            A dictionary containing variable names as keys and their corresponding transformed values.</span>
+<span class="sd">        suffix : str, optional</span>
+<span class="sd">            A suffix to append to the original variable names. Defaults to an empty string.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        new_x : dict</span>
+<span class="sd">            A dictionary containing inverse transformed variables with original names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_transforms</span><span class="p">()</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">new_x</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;infinite&#39;</span><span class="p">:</span>
+                <span class="n">new_x</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_x</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_transforms</span><span class="p">[</span><span class="n">key</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">new_x</span></div>
+
+
+<div class="viewcode-block" id="DomainChanger.inverse_log_jacobian">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.inverse_log_jacobian">[docs]</a>
+    <span class="k">def</span> <span class="nf">inverse_log_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the sum of the logarithm of Jacobian determinants for each variable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : dict</span>
+<span class="sd">            A dictionary containing variable names as keys and their corresponding transformed values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        log_det : float</span>
+<span class="sd">            The sum of the logarithm of Jacobian determinants.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_jacobian_determinant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">()]))</span></div>
+
+
+<div class="viewcode-block" id="DomainChanger.logprob_wrapped">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.logprob_wrapped">[docs]</a>
+    <span class="k">def</span> <span class="nf">logprob_wrapped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logprob_func</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a wrapped likelihood function that includes the inverse log Jacobian term.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        logprob_func : function</span>
+<span class="sd">            A log probability function that takes a dictionary of variables as input.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        likelihood_func : function</span>
+<span class="sd">            A wrapped likelihood function that includes the inverse log Jacobian term.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">likelihood_func</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="k">return</span>  <span class="n">logprob_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_log_jacobian</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">likelihood_func</span></div>
+</div>
+
+
+        
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Asad Hussain, Shivan Mittal, Aditi Pujar, Kody Anderson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

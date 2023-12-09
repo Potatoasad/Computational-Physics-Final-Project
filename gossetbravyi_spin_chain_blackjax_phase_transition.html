@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1D Quantum spin chains &mdash; Computational Physics Final Project 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="quicksampler" href="modules.html" />
+    <link rel="prev" title="Inferring the Distribution of Gravitational Waves" href="BlackHolePopulationAnalysis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Computational Physics Final Project
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="softspheres_blackjax_phase_transition.html">Soft-sphere packing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MetropolisHastingsSampler_Tests.html">Continuous MH Sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BayesianInferenceTests.html">Simple Bayesian Inference Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BlackHolePopulationAnalysis.html">Inferring the Distribution of Gravitational Waves</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1D Quantum spin chains</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Set-up-environment">Set-up environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">1D Quantum spin chains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Problem-class">Problem class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Sampler-class">Sampler class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Example">Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Choice-of-parameters">Choice of parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Generate-samples-and-compute-net-magnetization">Generate samples and compute net magnetization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Plots">Plots</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">quicksampler</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Computational Physics Final Project</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">1D Quantum spin chains</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/gossetbravyi_spin_chain_blackjax_phase_transition.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="1D-Quantum-spin-chains">
+<h1>1D Quantum spin chains<a class="headerlink" href="#1D-Quantum-spin-chains" title="Link to this heading"></a></h1>
+<section id="Set-up-environment">
+<h2>Set-up environment<a class="headerlink" href="#Set-up-environment" title="Link to this heading"></a></h2>
+<p>Install <code class="docutils literal notranslate"><span class="pre">blackjax</span></code> if not already available. Note that <code class="docutils literal notranslate"><span class="pre">blackjax</span></code> is not available by default in Google Colab where this notebook was tested, therefore this step is necessary. Otherwise, it may be commented out.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>blackjax
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Collecting blackjax
+  Downloading blackjax-1.0.0-py3-none-any.whl (300 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">300.1/300.1 kB</span> <span class="ansi-red-fg">5.5 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Requirement already satisfied: fastprogress&gt;=1.0.0 in /usr/local/lib/python3.10/dist-packages (from blackjax) (1.0.3)
+Requirement already satisfied: jax&gt;=0.4.16 in /usr/local/lib/python3.10/dist-packages (from blackjax) (0.4.20)
+Requirement already satisfied: jaxlib&gt;=0.4.16 in /usr/local/lib/python3.10/dist-packages (from blackjax) (0.4.20+cuda11.cudnn86)
+Collecting jaxopt&gt;=0.8 (from blackjax)
+  Downloading jaxopt-0.8.2-py3-none-any.whl (170 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">170.3/170.3 kB</span> <span class="ansi-red-fg">12.7 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Requirement already satisfied: optax&gt;=0.1.7 in /usr/local/lib/python3.10/dist-packages (from blackjax) (0.1.7)
+Requirement already satisfied: typing-extensions&gt;=4.4.0 in /usr/local/lib/python3.10/dist-packages (from blackjax) (4.5.0)
+Requirement already satisfied: ml-dtypes&gt;=0.2.0 in /usr/local/lib/python3.10/dist-packages (from jax&gt;=0.4.16-&gt;blackjax) (0.2.0)
+Requirement already satisfied: numpy&gt;=1.22 in /usr/local/lib/python3.10/dist-packages (from jax&gt;=0.4.16-&gt;blackjax) (1.23.5)
+Requirement already satisfied: opt-einsum in /usr/local/lib/python3.10/dist-packages (from jax&gt;=0.4.16-&gt;blackjax) (3.3.0)
+Requirement already satisfied: scipy&gt;=1.9 in /usr/local/lib/python3.10/dist-packages (from jax&gt;=0.4.16-&gt;blackjax) (1.11.4)
+Requirement already satisfied: absl-py&gt;=0.7.1 in /usr/local/lib/python3.10/dist-packages (from optax&gt;=0.1.7-&gt;blackjax) (1.4.0)
+Requirement already satisfied: chex&gt;=0.1.5 in /usr/local/lib/python3.10/dist-packages (from optax&gt;=0.1.7-&gt;blackjax) (0.1.7)
+Requirement already satisfied: dm-tree&gt;=0.1.5 in /usr/local/lib/python3.10/dist-packages (from chex&gt;=0.1.5-&gt;optax&gt;=0.1.7-&gt;blackjax) (0.1.8)
+Requirement already satisfied: toolz&gt;=0.9.0 in /usr/local/lib/python3.10/dist-packages (from chex&gt;=0.1.5-&gt;optax&gt;=0.1.7-&gt;blackjax) (0.12.0)
+Installing collected packages: jaxopt, blackjax
+Successfully installed blackjax-1.0.0 jaxopt-0.8.2
+</pre></div></div>
+</div>
+<p>Import all the required libraries at once.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">time</span> <span class="k">as</span> <span class="nn">t</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">blackjax</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="id1">
+<h2>1D Quantum spin chains<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://arxiv.org/abs/1503.04035">Gosset and Bravyi</a> parameterize all 2-local (acting on two sites) 1D quantum spin Hamiltonians <span class="math notranslate nohighlight">\(H\)</span> of the form <span class="math notranslate nohighlight">\(H = \sum_{i} h_i,\)</span> for - spin-1/2 (qubits) - <span class="math notranslate nohighlight">\(h_i\)</span> are the same upto the location of sites for different <span class="math notranslate nohighlight">\(i\)</span> and - <span class="math notranslate nohighlight">\(h_i\)</span> are rank 1 projectors</p>
+<p>in terms of two parameters <span class="math notranslate nohighlight">\(\theta\)</span> (i.e. what that article calls <span class="math notranslate nohighlight">\(\theta_2 - \theta_1\)</span>) and <span class="math notranslate nohighlight">\(p.\)</span> What is special about these Hamiltonians, is that Gosset and Bravyi were able to show when such Hamiltonians are gapped or gapless.</p>
+<p><strong>Defition:</strong> A Hamiltonian is gapped if the difference between its lowest and second lowest eigenvalue tends to a constant as the system size (number of spin 1/2) tends to infinity. Similarly, a Hamiltonian is gapless if the difference between its lowest and second lowest eigenvalue tends to 0 as the system size (number of spin 1/2) tends to infinity.</p>
+<p><strong>Significance:</strong> In Physics, on the one hand, gapless spin Hamiltonians show critical phenomena and phase transitions, i.e. long range correlated behaviour. On the other hand, gapped spin Hamiltonians (in 1D) can be efficiently simulated on classical computers, and exhibit short range correlations.</p>
+<p><strong>Question:</strong> All of the above is effectively known for the case of 0 temperature. We wonder what happens to a physical quantity that could potentially show phase transition behaviour (e.g. net magnetization) at finite temperature? In other words, how does gapped/gapless-ness of the spin Hamiltonian manifest itself in net magnetization at finite temperature? <em>In particular, for 1D, open boundary condition spin 1/2 chain, does net magnetization at finite temperature exhibit exotic behavior as we
+tune the parameter :math:`p` such that the Hamiltonian goes from being gapped to being gapless?</em></p>
+</section>
+<section id="Problem-class">
+<h2>Problem class<a class="headerlink" href="#Problem-class" title="Link to this heading"></a></h2>
+<p>We define a class with the relevant parameters whose names are self explanatory—<code class="docutils literal notranslate"><span class="pre">theta</span></code>, <code class="docutils literal notranslate"><span class="pre">p</span></code>, inverse temperature <code class="docutils literal notranslate"><span class="pre">beta</span></code>—for the problem. We build the local term of the Hamiltonian in accordance to the article inside the <code class="docutils literal notranslate"><span class="pre">self.__init__()</span></code> method. We define a <code class="docutils literal notranslate"><span class="pre">self.cost()</span></code> method that computes the expectation value of the Hamiltonian with a proposed quantum state. Note that we restrict ourselves to only completely separale product states, which is a major simplification but allows
+us to scale up the number of sites without suffering the curse of dimensionality.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GossetBravyiSpinChain</span><span class="p">:</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_spins</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">number_spins</span> <span class="o">=</span> <span class="n">number_spins</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)],</span> <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)]])</span>
+    <span class="n">local_hamiltonian_projector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">)</span> <span class="o">@</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">p</span><span class="p">)]]))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">local_hamiltonian</span> <span class="o">=</span> <span class="n">local_hamiltonian_projector</span> <span class="o">@</span> <span class="p">(</span><span class="n">local_hamiltonian_projector</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+    <span class="k">def</span> <span class="nf">qubit_states</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+      <span class="n">cc</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+      <span class="n">cs</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+      <span class="n">sc</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+      <span class="n">ss</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cc</span><span class="p">,</span> <span class="n">cs</span><span class="p">,</span> <span class="n">sc</span><span class="p">,</span> <span class="n">ss</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">qubit_states</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">return_cost</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">((</span><span class="n">qs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_hamiltonian</span> <span class="o">@</span> <span class="n">qs</span><span class="p">))</span>
+    <span class="k">return</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">return_cost</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+<section id="Sampler-class">
+<h2>Sampler class<a class="headerlink" href="#Sampler-class" title="Link to this heading"></a></h2>
+<p>This is identical to that from soft sphere packing phase transition example. We borrow and adapt the explanation from that example jupyter notebook. Most importantly, it is not obvious that a Hamiltonian Monte Carlo sampler will be able to sample the energy landscape effectively because it is not clear if the gradients of the energy with respect to the parameters that specify the proposal product states are even well defined. This criticism was absent for the case of soft spheres, because in
+that case, the gradients of the energy were clearly related to the classical mechanical momentum of the soft spheres.</p>
+<p>Following is the Hamiltonian Monte Carlo sampling algorithm from <code class="docutils literal notranslate"><span class="pre">blackjax</span></code>. Although functions are provided in that package, we put it together in one coherent class whose interface is easy to use. User may simply provide an instance of the problem class (in our case, an instance of <code class="docutils literal notranslate"><span class="pre">GossetBravyiSpinChain</span></code>) and an initial “position” (a quantum product state) from the correct configuration space (subset of the Hilbert space containing only completely separable product states). Other options
+that a user may set are the options to “warmup” the sampler and if so then the number of steps (time) for which to “warmup”. <code class="docutils literal notranslate"><span class="pre">warmup=True</span></code> allows the sampler to choose parameters—maximum <code class="docutils literal notranslate"><span class="pre">step_size</span></code> to move in the configuration space, and the inertia of the points to resist change, given by the <code class="docutils literal notranslate"><span class="pre">inverse_mass_matrix</span></code>—automatically. Otherwise the user needs to specify these parameters later when calling the <code class="docutils literal notranslate"><span class="pre">run</span></code> method of this class to generate samples.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># global constants for sampling algorithm</span>
+<span class="n">DEFAULT_WARMUP_TIME</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">DEFAULT_STEP_SIZE</span> <span class="o">=</span> <span class="mf">0.005</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span>
+
+<span class="k">class</span> <span class="nc">NutsWindowAdapt</span><span class="p">:</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem_instance</span><span class="p">,</span> <span class="n">initial_position</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">warmup_time</span><span class="o">=</span><span class="n">DEFAULT_WARMUP_TIME</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">call_cost_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">problem_instance</span><span class="o">.</span><span class="n">cost</span><span class="p">(</span><span class="o">**</span><span class="n">x</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">initial_position</span> <span class="o">=</span> <span class="n">initial_position</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">warmup</span> <span class="o">=</span> <span class="n">warmup</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">warmup</span><span class="p">:</span>
+      <span class="n">warmup_sampler</span> <span class="o">=</span> <span class="n">blackjax</span><span class="o">.</span><span class="n">window_adaptation</span><span class="p">(</span><span class="n">blackjax</span><span class="o">.</span><span class="n">nuts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_cost_function</span><span class="p">)</span>
+      <span class="n">_</span><span class="p">,</span> <span class="n">warmup_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+      <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">),</span> <span class="n">_</span> <span class="o">=</span> <span class="n">warmup_sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">warmup_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_position</span><span class="p">,</span> <span class="n">num_steps</span><span class="o">=</span><span class="n">warmup_time</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">inference_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng_key</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
+    <span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+    <span class="k">def</span> <span class="nf">one_step</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rng_key</span><span class="p">):</span>
+        <span class="n">state</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">rng_key</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">state</span>
+
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng_key</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">states</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="n">one_step</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">states</span>
+
+  <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span> <span class="n">inverse_mass_matrix</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="n">DEFAULT_STEP_SIZE</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warmup</span><span class="p">:</span>
+      <span class="n">kernel</span> <span class="o">=</span> <span class="n">blackjax</span><span class="o">.</span><span class="n">nuts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">call_cost_function</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span><span class="o">.</span><span class="n">step</span>
+      <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_loop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_key</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">run_time</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">nuts_sampler</span> <span class="o">=</span> <span class="n">blackjax</span><span class="o">.</span><span class="n">nuts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">call_cost_function</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">inverse_mass_matrix</span><span class="p">)</span>
+      <span class="n">initial_state</span> <span class="o">=</span> <span class="n">nuts_sampler</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_position</span><span class="p">)</span>
+      <span class="n">_</span><span class="p">,</span> <span class="n">sample_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span><span class="p">)</span>
+      <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_loop</span><span class="p">(</span><span class="n">sample_key</span><span class="p">,</span> <span class="n">nuts_sampler</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">,</span> <span class="n">run_time</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">states</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Example">
+<h2>Example<a class="headerlink" href="#Example" title="Link to this heading"></a></h2>
+<section id="Choice-of-parameters">
+<h3>Choice of parameters<a class="headerlink" href="#Choice-of-parameters" title="Link to this heading"></a></h3>
+<p>Below we provide one example choice of parameters for which we recover a finite temperature phase transition in the net magnetization. We consider a 50 spin-1/2 chain, with <span class="math notranslate nohighlight">\(\theta = 2 \pi / 5,\)</span> random initial product state, a unbiased inverse mass matrix and an empirically determined step size.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">number_spins</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">5.</span>
+<span class="n">run_time</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">initial_data</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">number_spins</span><span class="p">)</span>
+<span class="n">initial_position</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">initial_data</span><span class="p">}</span>
+
+<span class="n">inverse_mass_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">initial_position</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="n">step_size</span> <span class="o">=</span> <span class="mf">0.005</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Generate-samples-and-compute-net-magnetization">
+<h3>Generate samples and compute net magnetization<a class="headerlink" href="#Generate-samples-and-compute-net-magnetization" title="Link to this heading"></a></h3>
+<p>We vary <span class="math notranslate nohighlight">\(p\)</span> from 0 to 0.5 with a resolution of 101 including the end points. We compute the net magnetization by subtracting the probability a spin is pointed down from the probability it is pointing up for each spin in the chain and for each sample (for a total of <code class="docutils literal notranslate"><span class="pre">run_time</span></code> number of samples). We save the net magnetization for each value of <code class="docutils literal notranslate"><span class="pre">p</span></code> in <code class="docutils literal notranslate"><span class="pre">magnetization_list</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">magnetization_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+<span class="n">plist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
+<span class="n">sum_time</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">:</span>
+  <span class="n">gbsc</span> <span class="o">=</span> <span class="n">GossetBravyiSpinChain</span><span class="p">(</span><span class="n">number_spins</span><span class="o">=</span><span class="n">number_spins</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+  <span class="n">nwa</span> <span class="o">=</span> <span class="n">NutsWindowAdapt</span><span class="p">(</span><span class="n">gbsc</span><span class="p">,</span> <span class="n">initial_position</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+  <span class="n">history</span> <span class="o">=</span> <span class="n">nwa</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_time</span><span class="o">=</span><span class="n">run_time</span><span class="p">,</span> <span class="n">inverse_mass_matrix</span><span class="o">=</span><span class="n">inverse_mass_matrix</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="n">step_size</span><span class="p">)</span>
+  <span class="n">history</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="n">history</span> <span class="o">=</span> <span class="n">history</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+  <span class="n">magnetization_list_item</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">number_spins</span>
+  <span class="n">magnetization_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">magnetization_list_item</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2"> p: &quot;</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;.2f&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, time elapsed: &quot;</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;.4f&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ p: 0.50, time elapsed: 785.0951s
+</pre></div></div>
+</div>
+</section>
+<section id="Plots">
+<h3>Plots<a class="headerlink" href="#Plots" title="Link to this heading"></a></h3>
+<p>We find the minimum and maximum value in the <code class="docutils literal notranslate"><span class="pre">magnetization_list</span></code> in order to set the limits of the histogram in the plot that comes next.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">magnetization_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">magnetization_list</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">magnetization_list</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">magnetization_list</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0.012501239 0.85467017
+</pre></div></div>
+</div>
+<p>In the plot on the left, we depict a histogram constructed from all samples (total of <code class="docutils literal notranslate"><span class="pre">run_time</span></code>) net magnetization for each value of <code class="docutils literal notranslate"><span class="pre">p</span></code> with 0 &lt; <code class="docutils literal notranslate"><span class="pre">p</span></code> &lt; 0.2 in blue to black and 0.2 &lt; <code class="docutils literal notranslate"><span class="pre">p</span></code> &lt; 0.5 in black to red. In the plot on the right, we plot the standard deviation of each histogram on the left hand side plot, with the corresponding color scheme.</p>
+<p>In the right hand side plot, the phase transition in net magnetization as measured by product state samples with an order parameter of <code class="docutils literal notranslate"><span class="pre">p</span></code> is apparent. At the critical <code class="docutils literal notranslate"><span class="pre">p</span></code> the standard deviation in the net magnetization diverges, which is indicative of the long range correlations of the spins.</p>
+<p>This result is non-trivial in many ways, - we constrained the Hilbert space to a subset of product states - we sample used Hamiltonian Monte Carlo, which makes use of gradient information of the energy function, which, a priori, does not have a clear interpretation as “momentum” in the case of soft spheres - a priori, we do not know if a finite temperature cross over from gapped to gapless phase of the Hamiltonian show leave any signature in the net magnetization</p>
+<p>All in all, we used <code class="docutils literal notranslate"><span class="pre">blackjax</span></code> sampler on a quantum spin Hamiltonian problem, explored a tiny subset of the Hilbert space at finite temperature and observed a non-trivial behaviour of the net magnetization.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plotting constants</span>
+<span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span>
+<span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span>
+<span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span>
+<span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+
+<span class="c1"># plotting data</span>
+<span class="n">xaxis</span> <span class="o">=</span> <span class="p">(</span><span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">bins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">window</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">average_xaxis</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">xaxis</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">window</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xaxis</span><span class="p">)</span> <span class="o">-</span> <span class="n">window</span><span class="p">)]</span>
+<span class="n">size</span><span class="o">=</span><span class="mi">20</span>
+<span class="n">maxstd</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># plot</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">magnetization_list</span><span class="p">)):</span>
+  <span class="n">histogram_data</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">magnetization_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
+  <span class="n">average_histogram_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">histogram_data</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">window</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">histogram_data</span><span class="p">)</span> <span class="o">-</span> <span class="n">window</span><span class="p">)]</span>
+  <span class="n">average_histogram_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">average_histogram_data</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">maxstd</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">magnetization_list</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+    <span class="n">maxstd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">magnetization_list</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+  <span class="k">if</span> <span class="n">plist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.2</span><span class="p">:</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">plist</span><span class="p">[</span><span class="n">plist</span> <span class="o">&lt;</span> <span class="mf">0.2</span><span class="p">])]</span>
+    <span class="c1"># ax[0].plot(xaxis, histogram_data, alpha=alpha, color=color, linewidth=linewidth)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">average_xaxis</span><span class="p">,</span> <span class="n">average_histogram_data</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">plist</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">magnetization_list</span><span class="p">[</span><span class="n">i</span><span class="p">])],</span> <span class="n">size</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">plist</span><span class="p">[</span><span class="n">plist</span> <span class="o">&lt;</span> <span class="mf">0.2</span><span class="p">]))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">plist</span><span class="p">[</span><span class="n">plist</span> <span class="o">&gt;=</span> <span class="mf">0.2</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># ax[0].plot(xaxis, histogram_data, alpha=alpha, color=color, linewidth=linewidth)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">average_xaxis</span><span class="p">,</span> <span class="n">average_histogram_data</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">plist</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">magnetization_list</span><span class="p">[</span><span class="n">i</span><span class="p">])],</span> <span class="n">size</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+
+<span class="c1"># plot formatting</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="nb">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;.2f&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mi">4</span><span class="p">)])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Net magnetization per site&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="nb">format</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">run_time</span><span class="p">,</span> <span class="s1">&#39;.2f&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">5</span><span class="p">)])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">80</span><span class="p">])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Fraction of samples&quot;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="nb">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;.1f&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">)])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$p$&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="nb">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;.2f&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">4</span><span class="p">)])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Std. dev. of magnetization&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/gossetbravyi_spin_chain_blackjax_phase_transition_17_0.png" src="_images/gossetbravyi_spin_chain_blackjax_phase_transition_17_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="BlackHolePopulationAnalysis.html" class="btn btn-neutral float-left" title="Inferring the Distribution of Gravitational Waves" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="quicksampler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Asad Hussain, Shivan Mittal, Aditi Pujar, Kody Anderson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Bayesian Inference Examples &mdash; Computational Physics Final Project 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Inferring the Distribution of Gravitational Waves" href="BlackHolePopulationAnalysis.html" />
+    <link rel="prev" title="Continuous MH Sampler" href="MetropolisHastingsSampler_Tests.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Computational Physics Final Project
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="softspheres_blackjax_phase_transition.html">Soft-sphere packing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MetropolisHastingsSampler_Tests.html">Continuous MH Sampler</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Simple Bayesian Inference Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Linear-Regression">Linear Regression</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Linear-Regressor-Model">Linear Regressor Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Inferring-coin-flip-bias-with-the-Metropolis-Hastings-Sampler-&amp;-numpy">Inferring coin flip bias with the Metropolis Hastings Sampler &amp; numpy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Inferring-coin-flip-bias-with-the-Metropolis-Hastings-sampler-and-JAX">Inferring coin flip bias with the Metropolis Hastings sampler and JAX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Inferring-coin-flip-bias-with-the-NUTS-sampler">Inferring coin flip bias with the NUTS sampler</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="BlackHolePopulationAnalysis.html">Inferring the Distribution of Gravitational Waves</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html">1D Quantum spin chains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">quicksampler</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Computational Physics Final Project</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Simple Bayesian Inference Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/BayesianInferenceTests.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Simple-Bayesian-Inference-Examples">
+<h1>Simple Bayesian Inference Examples<a class="headerlink" href="#Simple-Bayesian-Inference-Examples" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">from</span> <span class="nn">jax</span> <span class="kn">import</span> <span class="n">random</span>
+<span class="kn">from</span> <span class="nn">jax.scipy.special</span> <span class="kn">import</span> <span class="n">logsumexp</span>
+<span class="kn">from</span> <span class="nn">jax</span> <span class="kn">import</span> <span class="n">grad</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+<section id="Linear-Regression">
+<h2>Linear Regression<a class="headerlink" href="#Linear-Regression" title="Link to this heading"></a></h2>
+<p>Lets set up a linear regression problem and get samples from the likelihood function. First we produce the data</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">key</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">noise_amount</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">eps</span> <span class="o">=</span> <span class="n">noise_amount</span><span class="o">*</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="n">Y</span> <span class="o">=</span> <span class="n">m</span><span class="o">*</span><span class="n">X</span> <span class="o">+</span> <span class="n">c</span> <span class="o">+</span> <span class="n">eps</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Y = mX + c + noise&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/BayesianInferenceTests_3_0.png" src="_images/BayesianInferenceTests_3_0.png" />
+</div>
+</div>
+<section id="Linear-Regressor-Model">
+<h3>Linear Regressor Model<a class="headerlink" href="#Linear-Regressor-Model" title="Link to this heading"></a></h3>
+<p>Here we create the model. All we need is a class that has a <code class="docutils literal notranslate"><span class="pre">logpdf</span></code> function that takes in a dictionary of data and outputs the logpdf</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LinearRegressor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">noise</span>
+
+    <span class="k">def</span> <span class="nf">logpdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Y</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">])</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">noise</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">Z</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Instantiate the model</strong></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">LR</span> <span class="o">=</span> <span class="n">LinearRegressor</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">noise</span><span class="o">=</span><span class="n">noise_amount</span><span class="p">)</span>  <span class="c1"># Instantiate the model</span>
+</pre></div>
+</div>
+</div>
+<p>Set starting point of the NUTS sampler to some point specified as a dictionary. Then initialize the NUTS sampler</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quicksampler</span> <span class="kn">import</span> <span class="n">NUTS</span>
+<span class="kn">import</span> <span class="nn">jax</span>
+
+<span class="n">initial_position</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;m&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">}</span> <span class="c1"># starting point of the NUTS sampler</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">NUTS</span><span class="p">(</span><span class="n">LR</span><span class="p">,</span> <span class="n">initial_position</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Run the results</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running the inference for 1000 samples
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="n">df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>m</th>
+      <th>c</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.103061</td>
+      <td>-0.013709</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.103323</td>
+      <td>-0.011630</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.105348</td>
+      <td>-0.018875</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.105896</td>
+      <td>-0.039735</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.108621</td>
+      <td>-0.031321</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>995</th>
+      <td>0.104327</td>
+      <td>-0.025296</td>
+    </tr>
+    <tr>
+      <th>996</th>
+      <td>0.105400</td>
+      <td>-0.005010</td>
+    </tr>
+    <tr>
+      <th>997</th>
+      <td>0.105913</td>
+      <td>-0.027444</td>
+    </tr>
+    <tr>
+      <th>998</th>
+      <td>0.099664</td>
+      <td>0.005911</td>
+    </tr>
+    <tr>
+      <th>999</th>
+      <td>0.100274</td>
+      <td>0.014101</td>
+    </tr>
+  </tbody>
+</table>
+<p>1000 rows × 2 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">hist</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+array([[&lt;Axes: title={&#39;center&#39;: &#39;m&#39;}&gt;, &lt;Axes: title={&#39;center&#39;: &#39;c&#39;}&gt;]],
+      dtype=object)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/BayesianInferenceTests_13_1.png" src="_images/BayesianInferenceTests_13_1.png" />
+</div>
+</div>
+<p>The chain will be returned as a dataframe. We can now create a traceplot and a histogram of the parameters</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Traceplot&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/BayesianInferenceTests_15_0.png" src="_images/BayesianInferenceTests_15_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Inferring-coin-flip-bias-with-the-Metropolis-Hastings-Sampler-&amp;-numpy">
+<h2>Inferring coin flip bias with the Metropolis Hastings Sampler &amp; numpy<a class="headerlink" href="#Inferring-coin-flip-bias-with-the-Metropolis-Hastings-Sampler-&-numpy" title="Link to this heading"></a></h2>
+<p>Same thing again, lets generate some data. We’ll do 100 experiments of 10 flips each using a biased coin with parameter <span class="math notranslate nohighlight">\(p\)</span></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="n">N_experiments</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">N_flips</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">p</span> <span class="o">=</span> <span class="mf">0.7</span>
+
+<span class="n">rv</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">binom</span><span class="p">(</span><span class="n">N_flips</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+<span class="n">head_counts</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">N_experiments</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now lets define our coin flip model:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CoinFlip</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N_flips</span><span class="p">,</span> <span class="n">number_of_heads</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">head_counts</span> <span class="o">=</span> <span class="n">number_of_heads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N_flips</span> <span class="o">=</span> <span class="n">N_flips</span>
+
+    <span class="k">def</span> <span class="nf">logpdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">jax</span><span class="o">.</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">binom</span><span class="o">.</span><span class="n">logpmf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">head_counts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N_flips</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quicksampler</span> <span class="kn">import</span> <span class="n">NUTS</span><span class="p">,</span> <span class="n">MHSampler</span>
+
+<span class="n">CF</span> <span class="o">=</span> <span class="n">CoinFlip</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">head_counts</span><span class="p">)</span>
+
+<span class="n">initial_position</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p&#39;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">}</span> <span class="c1"># starting point of the NUTS sampler</span>
+<span class="n">problem2</span> <span class="o">=</span> <span class="n">MHSampler</span><span class="p">(</span><span class="n">CF</span><span class="p">,</span> <span class="n">initial_position</span><span class="p">,</span> <span class="n">limits</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;p&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]},</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;numpy&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result2</span> <span class="o">=</span> <span class="n">problem2</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Getting 1000 using Metropolis Hastings
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████████████████████████████████| 1000/1000 [00:03&lt;00:00, 293.00it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Sampling finished with an acceptance rate of 60.79
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">result2</span><span class="p">)</span>
+
+<span class="n">result</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/BayesianInferenceTests_22_0.png" src="_images/BayesianInferenceTests_22_0.png" />
+</div>
+</div>
+</section>
+<section id="Inferring-coin-flip-bias-with-the-Metropolis-Hastings-sampler-and-JAX">
+<h2>Inferring coin flip bias with the Metropolis Hastings sampler and JAX<a class="headerlink" href="#Inferring-coin-flip-bias-with-the-Metropolis-Hastings-sampler-and-JAX" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CF</span> <span class="o">=</span> <span class="n">CoinFlip</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">head_counts</span><span class="p">)</span>
+
+<span class="n">initial_position</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p&#39;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">}</span> <span class="c1"># starting point of the NUTS sampler</span>
+<span class="n">problem2</span> <span class="o">=</span> <span class="n">MHSampler</span><span class="p">(</span><span class="n">CF</span><span class="p">,</span> <span class="n">initial_position</span><span class="p">,</span> <span class="n">limits</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;p&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]},</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;JAX&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result2</span> <span class="o">=</span> <span class="n">problem2</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Getting 1000 using Metropolis Hastings
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████████████████████████████████| 1000/1000 [00:03&lt;00:00, 285.28it/s]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Sampling finished with an acceptance rate of 72.15
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">result2</span><span class="p">)</span>
+
+<span class="n">result</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/BayesianInferenceTests_26_0.png" src="_images/BayesianInferenceTests_26_0.png" />
+</div>
+</div>
+</section>
+<section id="Inferring-coin-flip-bias-with-the-NUTS-sampler">
+<h2>Inferring coin flip bias with the NUTS sampler<a class="headerlink" href="#Inferring-coin-flip-bias-with-the-NUTS-sampler" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CF</span> <span class="o">=</span> <span class="n">CoinFlip</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">head_counts</span><span class="p">)</span>
+
+<span class="n">initial_position</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p&#39;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">}</span> <span class="c1"># starting point of the NUTS sampler</span>
+<span class="n">problem2</span> <span class="o">=</span> <span class="n">NUTS</span><span class="p">(</span><span class="n">CF</span><span class="p">,</span> <span class="n">initial_position</span><span class="p">,</span> <span class="n">limits</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;p&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]},</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result2</span> <span class="o">=</span> <span class="n">problem2</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running the inference for 1000 samples
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">result2</span><span class="p">)</span>
+
+<span class="n">result</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/BayesianInferenceTests_30_0.png" src="_images/BayesianInferenceTests_30_0.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="MetropolisHastingsSampler_Tests.html" class="btn btn-neutral float-left" title="Continuous MH Sampler" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="BlackHolePopulationAnalysis.html" class="btn btn-neutral float-right" title="Inferring the Distribution of Gravitational Waves" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Asad Hussain, Shivan Mittal, Aditi Pujar, Kody Anderson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

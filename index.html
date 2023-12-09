@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Computational Physics Final Project’s documentation! &mdash; Computational Physics Final Project 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Soft-sphere packing" href="softspheres_blackjax_phase_transition.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            Computational Physics Final Project
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softspheres_blackjax_phase_transition.html">Soft-sphere packing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MetropolisHastingsSampler_Tests.html">Continuous MH Sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BayesianInferenceTests.html">Simple Bayesian Inference Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BlackHolePopulationAnalysis.html">Inferring the Distribution of Gravitational Waves</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html">1D Quantum spin chains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">quicksampler</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Computational Physics Final Project</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to Computational Physics Final Project’s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="welcome-to-computational-physics-final-project-s-documentation">
+<h1>Welcome to Computational Physics Final Project’s documentation!<a class="headerlink" href="#welcome-to-computational-physics-final-project-s-documentation" title="Link to this heading"></a></h1>
+<section class="tex2jax_ignore mathjax_ignore" id="sampling-spheres-and-spins">
+<h2>Sampling spheres and spins<a class="headerlink" href="#sampling-spheres-and-spins" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://potatoasad.github.io/Computational-Physics-Final-Project/">Notebooks, documentation for the sampler package can be found in the docs site for this repo</a></p>
+<section id="final-project-computational-physics-fall-2023">
+<h3>Final Project, Computational Physics, Fall 2023<a class="headerlink" href="#final-project-computational-physics-fall-2023" title="Link to this heading"></a></h3>
+<p><em>Aditi Pujar, Asad Hussain, Kody Anderson, Shivan Mittal</em></p>
+<p>
+        <img src="soft_spheres.jpg" width='200' />
+        <img src="sycamorev2.png" width='200' />
+        <img src="blackholesv2.jpeg" width='200' />
+</p>
+<p>Imagine a distribution <span class="math notranslate nohighlight">\(\rho(\mathbf{x})\)</span> over the domain <span class="math notranslate nohighlight">\(\mathbf{x} \in X \subset \mathbb{R}^n.\)</span> Sampling algorithms are answers to the question: Given that we do not have exact knowledge of the functional form of <span class="math notranslate nohighlight">\(\rho,\)</span> can we nonetheless generate samples from <span class="math notranslate nohighlight">\(\rho?\)</span> In particular, <em>Markov Chain Monte Carlo</em> algorithm is a sampling algorithm that only requires the knowledge of relative likelihood of two samples <span class="math notranslate nohighlight">\(\mathbf{x}_1\)</span> and <span class="math notranslate nohighlight">\(\mathbf{x}_2\)</span> drawn from the distribution <span class="math notranslate nohighlight">\(\rho,\)</span> i.e. knowledge of <span class="math notranslate nohighlight">\({\rm Likelihood} = \rho(\mathbf{x}_1) / \rho(\mathbf{x}_2)).\)</span> <em>Hamiltonian Monte Carlo</em> algorithm is another such sampling algorithm that further requires the knowledge of (a priori or empirically by differentiable ``code’’) the gradient of the likelihood.
+Numerous Physical problems can benefit from sampling algorithms. These range from (Classical and Quantum) many-body problems to data analysis for large scale Physics experiments (LIGO, CERN).</p>
+<ol class="arabic simple">
+<li><p>to package our own <em>Markov Chain Monte Carlo</em> algorithm and existing <em>Hamiltonian Monte Carlo</em> algorithm from <code class="docutils literal notranslate"><span class="pre">blackjax</span></code> library into a single class interface, and</p></li>
+<li><p>to demonstrate the ease of use of out interface and the utility of the sampling algorithms via the following examples of,</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="softspheres_blackjax_phase_transition.html"><span class="std std-doc">Phase transition in classical soft-sphere packing problem</span></a></p>
+<ol class="arabic simple">
+<li><p>Applications to classical error correcting codes</p></li>
+</ol>
+</li>
+<li><p><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html"><span class="std std-doc">Phase transition in 1D quantum spin Hamiltonians</span></a></p></li>
+<li><p><a class="reference internal" href="BlackHolePopulationAnalysis.html"><span class="std std-doc">Black hole parameter estimation using real observatory data from LIGO</span></a></p></li>
+<li><p><a class="reference external" href="https://github.com/Potatoasad/Computational-Physics-Final-Project/blob/main/ising_spin_hamiltonians.ipynb">Phase transitions in 2D Ising ferromagnets and spin glasses</a></p></li>
+</ol>
+</li>
+</ol>
+</section>
+<section id="plots-from-our-work">
+<h3>Plots from our work<a class="headerlink" href="#plots-from-our-work" title="Link to this heading"></a></h3>
+<p>
+        <figure>
+                <img src="soft_sphere_phase_transition.png" width="800">
+                <figcaption> Phase transition in soft sphere packing correlation function with lowering temperature </figcaption>
+        </figure>
+        <br><br><br><br>
+        <figure>
+                <img src="spin_chain_phase_transition.png" width="800">
+                <figcaption> Phase transition in 1D Quantum spin chain with increasing parameter "p" of the Hamiltonian (characterizes the Bell-state property of a local term in the Hamiltonian)  </figcaption>
+        </figure>
+  <figure>
+                <img src="blackholeinference.png" width="800">
+                <figcaption> Posterior distribution for the hyperparameters of a population model computed by performing hierarchical inference on samples from every confident LIGO binary black hole detection</figcaption>
+        </figure>
+        <br><br><br><br>
+        <figure>
+                <img src="spin_glass_transition.png" width="600">
+                <figcaption> Phase transition in spin glasses upon decreasing temperature, reflected in both - the Edwards Anderson Order parameter and the rugged energy landscapes </figcaption>
+        </figure>
+        <br><br><br><br>
+        <figure>
+                <img src="ferromagnet_transition.png" width="800">
+                <figcaption> Phase transition in 2D Ising model upon decreasing temperature </figcaption>
+        </figure>
+</p>
+<!---
+### Ideas
+Project ideas
+- [x] Sampling + gradient descent + packing problems + glass phase transition
+- [x] Statistical Mechanics steady state problems
+- [x] Bayesian Inference
+
+- [ ]  Inspiral stochastic dynamics
+- [ ] Differentiable ODE solver
+- [ ] Finding distribution samples are coming from
+- [ ] Differentiable ODE solver with distribution of parameter estimation
+- [ ] Stochastic stuff is common interest
+- [ ] Different cost functions corresponding to different measures of distance between distributions
+- [ ] KPZ
+- [ ] Imaginary time evolution and LQFT
+
+### What's common in the things we've selected:
+
+- [ ] A class to sample using any/many methods (or use pre packaged samplers):
+  - [x] Inverting CDF
+  - [x] Metropolis Hastings
+    - [ ] Benchmark for a nice potential landscape:
+      - [ ] e.g. $C(x) = \frac{1}{2}x^2$
+  - [ ] Maybe Gradient based? Hamiltonian Monte Carlo?
+
+- [ ] A class to define a probability distribution over the state space,
+  - [ ] break up into Cost function $C(x)$ and prob distribution over the state space $\exp(-\beta C(x))$
+
+- [ ] Classes that inherit from the above but is specific to the applications
+
+```python
+#import jax.numpy as jnp
+
+try:
+  import jax.numpy as np
+else:
+  import numpy as np
+
+
+class Distribution:
+  - pdf
+        - logpdf return -0.5*x**2
+
+class Sampler:
+  - sample
+  - distribution (object)
+
+class MCMCSampler:
+  - proposal step (acceptance criteria)
+  - compute pdf ratio
+
+class SamplerVisualization:
+  - Sampler
+  - Plots
+
+class CornerPlot:
+
+
+class StateSpaceAnimation
+ - samples
+ - animate()
+```
+---></section>
+</section>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softspheres_blackjax_phase_transition.html">Soft-sphere packing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="softspheres_blackjax_phase_transition.html#Set-up-environment">Set-up environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softspheres_blackjax_phase_transition.html#id1">Soft-sphere packing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softspheres_blackjax_phase_transition.html#Problem-class">Problem class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softspheres_blackjax_phase_transition.html#Sampler-class">Sampler class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softspheres_blackjax_phase_transition.html#Example:-phase-transition-in-soft-sphere-packing">Example: phase transition in soft-sphere packing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="softspheres_blackjax_phase_transition.html#Choice-of-parameters">Choice of parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="softspheres_blackjax_phase_transition.html#Sample-configurations-and-compute-correlation-functions">Sample configurations and compute correlation functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="softspheres_blackjax_phase_transition.html#Plots">Plots</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="MetropolisHastingsSampler_Tests.html">Continuous MH Sampler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="MetropolisHastingsSampler_Tests.html#Model:-N---Dimensional-Normal-distribution-with-Unknown-Mean">Model: N - Dimensional Normal distribution with Unknown Mean</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="MetropolisHastingsSampler_Tests.html#Trial">Trial</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="BayesianInferenceTests.html">Simple Bayesian Inference Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="BayesianInferenceTests.html#Linear-Regression">Linear Regression</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="BayesianInferenceTests.html#Linear-Regressor-Model">Linear Regressor Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="BayesianInferenceTests.html#Inferring-coin-flip-bias-with-the-Metropolis-Hastings-Sampler-&amp;-numpy">Inferring coin flip bias with the Metropolis Hastings Sampler &amp; numpy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BayesianInferenceTests.html#Inferring-coin-flip-bias-with-the-Metropolis-Hastings-sampler-and-JAX">Inferring coin flip bias with the Metropolis Hastings sampler and JAX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BayesianInferenceTests.html#Inferring-coin-flip-bias-with-the-NUTS-sampler">Inferring coin flip bias with the NUTS sampler</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="BlackHolePopulationAnalysis.html">Inferring the Distribution of Gravitational Waves</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="BlackHolePopulationAnalysis.html#Hierarchical-Likelihood-Inference">Hierarchical Likelihood Inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BlackHolePopulationAnalysis.html#Population-Model-Recap">Population Model Recap</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html">1D Quantum spin chains</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html#Set-up-environment">Set-up environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html#id1">1D Quantum spin chains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html#Problem-class">Problem class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html#Sampler-class">Sampler class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html#Example">Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html#Choice-of-parameters">Choice of parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html#Generate-samples-and-compute-net-magnetization">Generate samples and compute net magnetization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html#Plots">Plots</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">quicksampler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quicksampler.html">quicksampler package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quicksampler.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quicksampler.samplers.html">quicksampler.samplers package</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="quicksampler.samplers.html#submodules">Submodules</a></li>
+<li class="toctree-l5"><a class="reference internal" href="quicksampler.samplers.html#module-quicksampler.samplers.DomainChanger">quicksampler.samplers.DomainChanger module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger"><code class="docutils literal notranslate"><span class="pre">DomainChanger</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.compute_transforms"><code class="docutils literal notranslate"><span class="pre">DomainChanger.compute_transforms()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.inverse_log_jacobian"><code class="docutils literal notranslate"><span class="pre">DomainChanger.inverse_log_jacobian()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.inverse_transform"><code class="docutils literal notranslate"><span class="pre">DomainChanger.inverse_transform()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.inverse_transform_from_infinite_from_range"><code class="docutils literal notranslate"><span class="pre">DomainChanger.inverse_transform_from_infinite_from_range()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.logprob_wrapped"><code class="docutils literal notranslate"><span class="pre">DomainChanger.logprob_wrapped()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.transform"><code class="docutils literal notranslate"><span class="pre">DomainChanger.transform()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.DomainChanger.transform_to_infinite_from_range"><code class="docutils literal notranslate"><span class="pre">DomainChanger.transform_to_infinite_from_range()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform"><code class="docutils literal notranslate"><span class="pre">LogisticTransform</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform.epsilon"><code class="docutils literal notranslate"><span class="pre">LogisticTransform.epsilon</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform.backend"><code class="docutils literal notranslate"><span class="pre">LogisticTransform.backend</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform.inverse_transform_from_infinite"><code class="docutils literal notranslate"><span class="pre">LogisticTransform.inverse_transform_from_infinite()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform.log_jacobian_determinant"><code class="docutils literal notranslate"><span class="pre">LogisticTransform.log_jacobian_determinant()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.DomainChanger.LogisticTransform.transform_to_infinite"><code class="docutils literal notranslate"><span class="pre">LogisticTransform.transform_to_infinite()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="quicksampler.samplers.html#module-quicksampler.samplers.MHSampler">quicksampler.samplers.MHSampler module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.AbstractProposal"><code class="docutils literal notranslate"><span class="pre">AbstractProposal</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.AbstractProposal.__call__"><code class="docutils literal notranslate"><span class="pre">AbstractProposal.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.MHSampler"><code class="docutils literal notranslate"><span class="pre">MHSampler</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.MHSampler.accept_reject"><code class="docutils literal notranslate"><span class="pre">MHSampler.accept_reject()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.MHSampler.result"><code class="docutils literal notranslate"><span class="pre">MHSampler.result</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.MHSampler.run"><code class="docutils literal notranslate"><span class="pre">MHSampler.run()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.MHSampler.step"><code class="docutils literal notranslate"><span class="pre">MHSampler.step()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.SphericalGaussianProposal"><code class="docutils literal notranslate"><span class="pre">SphericalGaussianProposal</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.SphericalGaussianProposal.next_step"><code class="docutils literal notranslate"><span class="pre">SphericalGaussianProposal.next_step()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.convert_to_jax_array"><code class="docutils literal notranslate"><span class="pre">convert_to_jax_array()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.MHSampler.create_rng_key"><code class="docutils literal notranslate"><span class="pre">create_rng_key()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="quicksampler.samplers.html#module-quicksampler.samplers.NUTS">quicksampler.samplers.NUTS module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.NUTS.NUTS"><code class="docutils literal notranslate"><span class="pre">NUTS</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.NUTS.NUTS.inference_loop"><code class="docutils literal notranslate"><span class="pre">NUTS.inference_loop()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.NUTS.NUTS.result"><code class="docutils literal notranslate"><span class="pre">NUTS.result</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.NUTS.NUTS.run"><code class="docutils literal notranslate"><span class="pre">NUTS.run()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.NUTS.NUTS.step"><code class="docutils literal notranslate"><span class="pre">NUTS.step()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="quicksampler.samplers.html#quicksampler.samplers.NUTS.convert_to_jax_array"><code class="docutils literal notranslate"><span class="pre">convert_to_jax_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="quicksampler.samplers.html#module-quicksampler.samplers">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="quicksampler.html#module-quicksampler">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="softspheres_blackjax_phase_transition.html" class="btn btn-neutral float-right" title="Soft-sphere packing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Asad Hussain, Shivan Mittal, Aditi Pujar, Kody Anderson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase Transitions in Ising Spin Systems &mdash; Computational Physics Final Project 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Computational Physics Final Project
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softspheres_blackjax_phase_transition.html">Soft-sphere packing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MetropolisHastingsSampler_Tests.html">Continuous MH Sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BayesianInferenceTests.html">Simple Bayesian Inference Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BlackHolePopulationAnalysis.html">Inferring the Distribution of Gravitational Waves</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html">1D Quantum spin chains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">quicksampler</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Computational Physics Final Project</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Phase Transitions in Ising Spin Systems</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ising_spin_hamiltonians.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Phase-Transitions-in-Ising-Spin-Systems">
+<h1>Phase Transitions in Ising Spin Systems<a class="headerlink" href="#Phase-Transitions-in-Ising-Spin-Systems" title="Link to this heading"></a></h1>
+<p>The Ising Model is a very simple thermodynamic model, first formulated to explain ferromagnetism. One of the touchstones of modern physics, it comprises of <span class="math notranslate nohighlight">\(N\)</span> sites of quantum spins in a <span class="math notranslate nohighlight">\(d\)</span>-dimensional lattice. The quantum spins can have either of two orientations = <span class="math notranslate nohighlight">\(\pm1\)</span> and neighbouring spins interact. (In the absence of an external coupling field,) the energy of an Ising system is</p>
+<div class="math notranslate nohighlight">
+\[E = \Sigma_{\langle ij\rangle} H_{ij}\sigma_i\sigma_j\]</div>
+<p>where <span class="math notranslate nohighlight">\(H_{ij}\)</span> is the interaction energy between spins <span class="math notranslate nohighlight">\(\sigma_i\)</span> and <span class="math notranslate nohighlight">\(\sigma_j\)</span>. Concepts of locality are well defined here as spins only interact within their own neighborhoods.</p>
+<p>Tuning the nature of this interaction helps one realise various non-trivial physical systems and their phase transitions: if <span class="math notranslate nohighlight">\(H_{ij}&gt;0\;(&lt;0)\forall i,j\)</span>, the system is ferromagnetic (antiferromagnetic).</p>
+<p>If it can take any arbitrary sign, then it is a represents spin glasses, by virtue of encoding geometric frustration into the system.</p>
+<section id="Spin-Glasses">
+<h2>Spin Glasses<a class="headerlink" href="#Spin-Glasses" title="Link to this heading"></a></h2>
+<p>These are systems with “quenched disorder”, i.e. their (several) ground state configurations appear to be random (depsite not being truly random). This is very unlike (anti)ferro-magnetic systems which have simple energy landscapes with easily-found global minima.</p>
+<p>Spin glasses instead have lots of local minima, which also cannot be “easily escaped”. This implies that if near a local minima, it requires a large shift in configuration space to find another local minima. This leads to a “metastability” in the system, where it remains stuck in seemingly random configurations for long times (thereby leading to non-ergodicity).</p>
+<p>This leads to fascinating and complicated phenomena and understanding spin glasses has myriad applications, due to the ubiquity of complicated energy landscapes in various contexts.</p>
+<p>We now attempt to use MCMC Methods to detect phase transitions in these Ising systems:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Two-Dimensional-Ising-Models">
+<h2>Two Dimensional Ising Models<a class="headerlink" href="#Two-Dimensional-Ising-Models" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TwoDim_Ising</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;ferromagnetic&#39;</span><span class="p">,</span> <span class="n">boundaries</span> <span class="o">=</span> <span class="s1">&#39;periodic&#39;</span><span class="p">,</span> <span class="n">rng_key</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a 2D lattice of quantum spins, initialise a Hamiltonian based off the type of system</span>
+<span class="sd">        and define the energy of a given configuration of spins</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        N : int</span>
+<span class="sd">        Dimensions of the 2D spin system are (N,N)</span>
+
+<span class="sd">        model : class</span>
+<span class="sd">        The input model primarily containing a proposal function, a method to generate a new configurtion.</span>
+
+<span class="sd">        boundaries : str</span>
+
+<span class="sd">        rng_key : int</span>
+<span class="sd">        The random number generator key, defaults to None.</span>
+
+<span class="sd">        Methods</span>
+<span class="sd">        -------</span>
+<span class="sd">        energy : returns int, array</span>
+<span class="sd">        The total energy of a configuration and an array of the energy of each individual spin</span>
+
+<span class="sd">        neighbour_indices : returns array</span>
+<span class="sd">        Helps enforce periodic boundary conditions</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">N</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span> <span class="o">=</span> <span class="n">boundaries</span>
+
+        <span class="k">if</span> <span class="n">rng_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng_key</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span> <span class="o">=</span> <span class="n">rng_key</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_condition</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">))</span>
+
+        <span class="c1"># initialising the Hamiltonian, dividing into up-down and left-right neighbor interactions</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;ferromagnetic&#39;</span><span class="p">:</span>
+            <span class="n">up</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;antiferromagnetic&#39;</span><span class="p">:</span>
+            <span class="n">up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span> <span class="c1">#np.random.randn(N-1,N)#</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;spin_glass&#39;</span><span class="p">:</span>
+            <span class="n">up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span> <span class="c1">#-1 + 2*np.random.rand(N,N)</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span> <span class="c1">#-1 + 2*np.random.rand(N,N)</span>
+
+        <span class="c1"># boundary conditions</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span> <span class="o">==</span> <span class="s1">&#39;fixed&#39;</span><span class="p">:</span>
+            <span class="n">down</span><span class="p">,</span> <span class="n">up</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+            <span class="n">down</span><span class="p">[:</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">up</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span>
+
+            <span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+            <span class="n">right</span><span class="p">[:,:</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">left</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span> <span class="o">==</span> <span class="s1">&#39;periodic&#39;</span><span class="p">:</span>
+            <span class="n">down</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span>
+            <span class="n">down</span><span class="p">[:</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">down</span><span class="p">[</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">up</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:],</span> <span class="n">up</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span>
+
+            <span class="n">right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span>
+            <span class="n">right</span><span class="p">[:,:</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">right</span><span class="p">[:,</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">left</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:],</span> <span class="n">left</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">up</span> <span class="o">=</span> <span class="n">up</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">down</span> <span class="o">=</span> <span class="n">down</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="n">left</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">right</span>
+
+    <span class="k">def</span> <span class="nf">neighbour_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="k">self</span>.N, j], # up_neighbour
+                         <span class="p">[(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="k">self</span>.N, j], # down_neighbour
+                         <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="k">self</span>.N], # left_neighbour
+                         <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="k">self</span>.N] ]) # right_neighbour
+    <span class="c1"># this returns periodic neighbour indices as up_neighbour, down_neighbour, left_neighbour, right_neighbour</span>
+
+    <span class="k">def</span> <span class="nf">energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">):</span>
+                <span class="n">nghb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbour_indices</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+                <span class="n">e</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">nghb</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+                      <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">down</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">nghb</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                      <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">nghb</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span>
+                      <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">nghb</span><span class="p">[</span><span class="mi">3</span><span class="p">])])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">e</span>
+</pre></div>
+</div>
+</div>
+<p>The most simple way to generate a new spin configuration given some current state, is by flipping a single spin at random. The proposed configuration is then accepted/rejected based off energy considerations.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SingleSpinFlip</span><span class="p">(</span><span class="n">TwoDim_Ising</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A child class to the two-dimensional Ising mode which generates a new spin</span>
+<span class="sd">    configuration through a single flip</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">N</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;ferromagnetic&#39;</span><span class="p">,</span> <span class="n">boundaries</span> <span class="o">=</span> <span class="s1">&#39;periodic&#39;</span><span class="p">,</span> <span class="n">rng_key</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">rng_key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">proposal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span> <span class="c1"># a single spin flip</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">new_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">new_state</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">new_state</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+
+        <span class="n">nghb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbour_indices</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+        <span class="n">del_e</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">new_state</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">nghb</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+                      <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">down</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">nghb</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                      <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">nghb</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span>
+                      <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">nghb</span><span class="p">[</span><span class="mi">3</span><span class="p">])])</span>
+
+        <span class="k">return</span> <span class="n">new_state</span><span class="p">,</span> <span class="n">del_e</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="StatMech-Metropolis-Hastings-Sampler">
+<h2>StatMech Metropolis Hastings Sampler<a class="headerlink" href="#StatMech-Metropolis-Hastings-Sampler" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">StatMech_MHSampler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Metropolis-Hastings sampler for generating configurations for a given statistical system.</span>
+<span class="sd">    (written separately while the primary MH_Sampler was generalised to sample from</span>
+<span class="sd">    any kind of target distribution)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : object</span>
+<span class="sd">        The system that defines configuration space, its energy and a proposal method.</span>
+
+<span class="sd">    init_position : array</span>
+<span class="sd">        The initial position in the state space.</span>
+
+<span class="sd">    beta : float</span>
+<span class="sd">        A measure of inverse temperature.</span>
+
+<span class="sd">    n_steps : int</span>
+<span class="sd">        The number of steps the sampler takes (number of proposal configurations it generates)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_steps</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span> <span class="c1"># has to have energy method and init_condition_variable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_condition</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">init_condition</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span> <span class="o">=</span> <span class="n">n_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">init_condition</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energies</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_condition</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_energies</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_condition</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">autocorr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">magnetisation</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_condition</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rates</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_state</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">400</span><span class="p">):</span>
+        <span class="c1"># accept = False</span>
+        <span class="c1"># steps = 0</span>
+        <span class="n">change_e</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># proposal step</span>
+        <span class="n">proposed_state</span><span class="p">,</span> <span class="n">del_e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">proposal</span><span class="p">(</span><span class="n">current_state</span><span class="p">)</span>
+
+        <span class="c1"># accept or reject step</span>
+        <span class="n">prob_accept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">*</span><span class="n">del_e</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">prob_accept</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rates</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">current_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">proposed_state</span><span class="p">)</span>
+            <span class="n">change_e</span> <span class="o">=</span> <span class="n">del_e</span>
+
+        <span class="k">return</span> <span class="n">current_state</span><span class="p">,</span> <span class="n">change_e</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">current_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_condition</span><span class="p">)</span>
+        <span class="n">init_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_condition</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span><span class="p">):</span>
+            <span class="n">new_state</span><span class="p">,</span> <span class="n">del_e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">current_state</span><span class="p">)</span>
+
+            <span class="n">current_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
+            <span class="n">init_energy</span> <span class="o">+=</span> <span class="n">del_e</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_state</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">init_energy</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">current_state</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">magnetisation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">new_state</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_energies</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">autocorr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_correlation</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">auto_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">means</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nb">vars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cross_corr</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">tau</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span><span class="p">):</span>
+            <span class="n">h_tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">tau</span><span class="p">:])</span>
+            <span class="n">h_tau</span> <span class="o">/=</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">h_tau</span><span class="p">))</span> <span class="c1">#/min(self.energies[tau:])</span>
+            <span class="n">h_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span><span class="o">-</span><span class="n">tau</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">h_t</span> <span class="o">/=</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">h_t</span><span class="p">))</span> <span class="c1">#/min(self.energies[:self.n_steps-tau+1])</span>
+
+            <span class="n">cross_corr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">h_tau</span><span class="o">*</span><span class="n">h_t</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span><span class="o">-</span><span class="n">tau</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">means</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">h_t</span><span class="p">))</span>
+            <span class="nb">vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">h_t</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cross_corr</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">means</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">vars</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">SingleSpinFlip</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;ferromagnetic&#39;</span><span class="p">)</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">StatMech_MHSampler</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">problem</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<section id="Single-Spin-Flips-for-Anti/Ferromagnets-and-Spin-Glasses">
+<h3>Single Spin Flips for Anti/Ferromagnets and Spin Glasses<a class="headerlink" href="#Single-Spin-Flips-for-Anti/Ferromagnets-and-Spin-Glasses" title="Link to this heading"></a></h3>
+<p>Running our sampler for the three different types of systems -</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ferromagnetic&#39;</span><span class="p">,</span> <span class="s1">&#39;antiferromagnetic&#39;</span><span class="p">,</span><span class="s1">&#39;spin_glass&#39;</span><span class="p">]</span>
+<span class="n">system</span> <span class="o">=</span> <span class="p">[</span><span class="n">StatMech_MHSampler</span><span class="p">(</span><span class="n">SingleSpinFlip</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">modtype</span><span class="p">))</span> <span class="k">for</span> <span class="n">modtype</span> <span class="ow">in</span> <span class="n">models</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">system</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/var/folders/tj/d36hhh5s38v8kjgg4z2s8mtw0000gn/T/ipykernel_26435/2530702672.py:86: RuntimeWarning: divide by zero encountered in divide
+  return ((np.array(cross_corr)) - np.array(means)**2)/np.array(vars)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[74]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">ncols</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="mf">2.55</span><span class="p">,</span><span class="mi">3</span><span class="o">*</span><span class="mf">2.15</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Energy&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Magnetisation&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Spin Patterns&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Frustrated Regions&#39;</span><span class="p">)</span>
+
+
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">system</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">energies</span><span class="p">)</span> <span class="c1">#/np.max(np.abs(system[i].energies)))</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">system</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">magnetisation</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">system</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">system</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">system</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="mi">1</span><span class="p">],</span><span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/ising_spin_hamiltonians_13_0.png" src="_images/ising_spin_hamiltonians_13_0.png" />
+</div>
+</div>
+<p>We see here that the sampler finds minima in energy (even for the spin glass case)! However, while the sampler found global minima for the ferromagnetic and antiferromagnetic systems, for the spin glass case, it merely settled into a narby local minima. This is evidenced by the amount of frustration one can see in the spin glass system.</p>
+</section>
+<section id="Order-Parameters-for-Phase-Transitions">
+<h3>Order Parameters for Phase Transitions<a class="headerlink" href="#Order-Parameters-for-Phase-Transitions" title="Link to this heading"></a></h3>
+<p>For a system of <span class="math notranslate nohighlight">\(N\)</span> spins, the following order parameters are well established - 1. For ferromagnetic material, the average magnetisation <span class="math notranslate nohighlight">\(m\)</span> defined as</p>
+<div class="math notranslate nohighlight">
+\[m = \frac{1}{N}\Sigma_i\sigma_i\]</div>
+<ol class="arabic simple" start="2">
+<li><p>For spin glasses, the Edwards Anderson order parameter <span class="math notranslate nohighlight">\(q\)</span>, (each individual spin is first averaged over time)</p></li>
+</ol>
+<div class="math notranslate nohighlight">
+\[q = \frac{1}{N}\Sigma_i \left(\langle \sigma_i \rangle _t\right)^2\]</div>
+<p>These can help us explore what kinds of energy minima are encountered by the sampler and assess the overall sampler performance.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># phase transitions over temperature:</span>
+<span class="n">betavals</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.001</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">100</span><span class="p">]</span>
+
+<span class="c1"># run ferromagnetic and spin glass over a range of betas, 10 trials for each beta.</span>
+
+<span class="n">ferro_trials</span> <span class="o">=</span> <span class="p">[</span><span class="n">StatMech_MHSampler</span><span class="p">(</span><span class="n">SingleSpinFlip</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;ferromagnetic&#39;</span><span class="p">),</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span><span class="p">)</span> <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">betavals</span><span class="p">]</span>
+<span class="n">spin_trials</span> <span class="o">=</span> <span class="p">[</span><span class="n">StatMech_MHSampler</span><span class="p">(</span><span class="n">SingleSpinFlip</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;spin_glass&#39;</span><span class="p">),</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span><span class="p">)</span> <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">betavals</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">beta</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">betavals</span><span class="p">):</span>
+    <span class="n">ferro_trials</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="n">spin_trials</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/var/folders/tj/d36hhh5s38v8kjgg4z2s8mtw0000gn/T/ipykernel_26435/2530702672.py:86: RuntimeWarning: divide by zero encountered in divide
+  return ((np.array(cross_corr)) - np.array(means)**2)/np.array(vars)
+/var/folders/tj/d36hhh5s38v8kjgg4z2s8mtw0000gn/T/ipykernel_26435/2530702672.py:86: RuntimeWarning: invalid value encountered in divide
+  return ((np.array(cross_corr)) - np.array(means)**2)/np.array(vars)
+/var/folders/tj/d36hhh5s38v8kjgg4z2s8mtw0000gn/T/ipykernel_26435/2530702672.py:25: RuntimeWarning: overflow encountered in exp
+  prob_accept = np.exp(-self.beta*del_e)
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[122]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">np_corr</span><span class="p">(</span><span class="n">energies</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">energies</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">energies</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">[:</span><span class="n">result</span><span class="o">.</span><span class="n">size</span><span class="o">//</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">size</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[123]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Average magnetisation: order parameter for ferromagnetic substance</span>
+<span class="n">mags</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ferro_trials</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">magnetisation</span><span class="p">[</span><span class="mi">4000</span><span class="p">:])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">betavals</span><span class="p">))]</span>
+
+<span class="c1"># Edwards Anderson order parameter for spin glass materials</span>
+<span class="n">ea</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spin_trials</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">states</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">spin_trials</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">n_steps</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">betavals</span><span class="p">))]</span>
+
+<span class="n">npautocorr</span> <span class="o">=</span> <span class="p">[</span><span class="n">np_corr</span><span class="p">(</span><span class="n">spin_trials</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">energies</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">betavals</span><span class="p">))]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="s2">&quot;text.usetex&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;font.family&quot;</span><span class="p">:</span> <span class="s2">&quot;sans-serif&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;font.sans-serif&quot;</span><span class="p">:</span> <span class="s2">&quot;Helvetica&quot;</span><span class="p">,</span>
+<span class="p">})</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">ncols</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">9</span><span class="p">))</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;log beta&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;log beta&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Ferromagnet</span><span class="se">\n</span><span class="s1">Avg. Magnetisation&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Spin Glass Edwards Anderson Parameter&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Avg. Magnetisation&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Autocorrelation&#39;</span><span class="p">)</span>
+
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">betavals</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mags</span><span class="p">),</span> <span class="s1">&#39;--o&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">betavals</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ea</span><span class="p">),</span> <span class="s1">&#39;--o&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">beta</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">betavals</span><span class="p">):</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ferro_trials</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">magnetisation</span><span class="p">),</span> <span class="n">label</span> <span class="o">=</span> <span class="n">beta</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">npautocorr</span><span class="p">[</span><span class="n">k</span><span class="p">][:</span><span class="mi">8000</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="n">beta</span><span class="p">)</span>
+
+<span class="c1"># Shrink current axis by 20%</span>
+<span class="n">box</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">([</span><span class="n">box</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">y0</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">width</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">height</span><span class="p">])</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center left&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+
+<span class="n">box</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">([</span><span class="n">box</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">y0</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">width</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">height</span><span class="p">])</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center left&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/ising_spin_hamiltonians_17_0.png" src="_images/ising_spin_hamiltonians_17_0.png" />
+</div>
+</div>
+<p>Thus our order parameters show that there is indeed a phase transition occurring <span class="math notranslate nohighlight">\(\sim\beta=1\)</span>. The magnetisation time evolution in the ferromagnets too reflected this, however our autocorrelation plots in spin glasses are less than satisfying.</p>
+<p>Due to increasing “metastability” in glassy states, one expects a slower drop off in the correlation with increasing <span class="math notranslate nohighlight">\(\beta\)</span>. While the overall trends are still promising, with correlation being higher for large <span class="math notranslate nohighlight">\(\beta\)</span>, they are increasing functions over time.</p>
+<p>This seems to be because the variance over time decreases to almost zero because the system finds a local minima and does not budge from there. The next local minima is further than a single flip away, thus there is no scope for escape. As a result, we simply reject every proposal and remain stuck at the minima, leading to zero variance and a divergence in the autocorrelation functions.</p>
+<p>Thus, the natural next step is to try methods where a proposed new state differs by more than a single flip - we instead “flip by the cluster”. ## Swendsen Wang Algorithm</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[124]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="kn">import</span> <span class="n">connected_components</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[146]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Swendsen Wang Algorithm</span>
+
+<span class="k">class</span> <span class="nc">SwendsenWang</span><span class="p">(</span><span class="n">TwoDim_Ising</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A cluster flip algorithm which first probabilistically creates bonds between alike spins</span>
+<span class="sd">    and then flips the spins of clusters as a whole.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;ferromagnetic&#39;</span><span class="p">,</span> <span class="n">boundaries</span> <span class="o">=</span> <span class="s1">&#39;periodic&#39;</span><span class="p">,</span> <span class="n">rng_key</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">rng_key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+
+    <span class="k">def</span> <span class="nf">ij_n</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ij</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">ij</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">ij</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">n_ij</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">n</span><span class="o">//</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">n</span><span class="o">%</span><span class="k">self</span>.N
+
+    <span class="k">def</span> <span class="nf">if_bond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">nghb_n</span><span class="p">,</span> <span class="n">Jij</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">nij</span><span class="p">,</span> <span class="n">nghbij</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_ij</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_ij</span><span class="p">(</span><span class="n">nghb_n</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="n">nij</span><span class="p">]</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="n">nghbij</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span><span class="o">&lt;</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">*</span><span class="n">Jij</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">swbonds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span> <span class="c1"># bonds are determined according to the SW Algorithm</span>
+        <span class="n">bonds</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">):</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ij_n</span><span class="p">((</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+                <span class="n">nghb_n</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ij_n</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">inds</span><span class="p">))</span> <span class="k">for</span> <span class="n">inds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbour_indices</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span>
+                <span class="c1">#neighbors are up, down left, right</span>
+                <span class="n">J_n</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">up</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">down</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]]</span>
+
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">nghb_ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nghb_n</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">bonds</span><span class="p">[</span><span class="n">n</span><span class="p">,</span><span class="n">nghb_ind</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="n">bonds</span><span class="p">[</span><span class="n">n</span><span class="p">,</span><span class="n">nghb_ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">if_bond</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">nghb_ind</span><span class="p">,</span><span class="n">J_n</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="n">state</span><span class="p">)</span>
+                        <span class="n">bonds</span><span class="p">[</span><span class="n">nghb_ind</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">bonds</span><span class="p">[</span><span class="n">n</span><span class="p">,</span><span class="n">nghb_ind</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">bonds</span><span class="o">%</span><span class="k">2</span>
+
+    <span class="k">def</span> <span class="nf">clustering</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span> <span class="c1"># simply for visualistaion purposes</span>
+        <span class="n">cluster_vis</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">labels</span> <span class="o">==</span><span class="n">labels</span><span class="p">[</span><span class="n">n</span><span class="p">])</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="n">cluster_vis</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_ij</span><span class="p">(</span><span class="n">n</span><span class="p">))]</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">cluster_vis</span>
+
+    <span class="k">def</span> <span class="nf">proposal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span> <span class="c1">#cluster_flip</span>
+        <span class="n">bonds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swbonds</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="c1"># N^2 * N^2</span>
+        <span class="n">n_components</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">connected_components</span><span class="p">(</span><span class="n">csgraph</span><span class="o">=</span><span class="n">bonds</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">cluster</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clustering</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>
+
+        <span class="n">new_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="c1"># labels is a 1*N^2 long vector</span>
+        <span class="c1"># append ij_n of labels to visualise clusters</span>
+
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+            <span class="n">cluster_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">labels</span><span class="o">==</span><span class="n">label</span><span class="p">)</span>
+            <span class="n">pflip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span>
+
+            <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">cluster_inds</span><span class="p">:</span>
+                <span class="n">ind_ij</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_ij</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+                <span class="n">cluster</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ind_ij</span><span class="p">)]</span> <span class="o">=</span> <span class="n">label</span>
+                <span class="k">if</span> <span class="n">pflip</span><span class="p">:</span>
+                    <span class="n">new_state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ind_ij</span><span class="p">)]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">new_state</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ind_ij</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">new_state</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="How-do-clusters-look-for-different-\beta?">
+<h3>How do clusters look for different <span class="math notranslate nohighlight">\(\beta\)</span>?<a class="headerlink" href="#How-do-clusters-look-for-different-\beta?" title="Link to this heading"></a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[147]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cluster_trials</span> <span class="o">=</span> <span class="p">[</span><span class="n">SwendsenWang</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;spin_glass&#39;</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span><span class="p">)</span> <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">betavals</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[149]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">18</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">beta</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">betavals</span><span class="p">):</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cluster_trials</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">init_condition</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;seismic&#39;</span><span class="p">)</span> <span class="c1">#cmap=&#39;binary&#39;)</span>
+    <span class="n">new_state</span> <span class="o">=</span> <span class="n">cluster_trials</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">proposal</span><span class="p">(</span><span class="n">cluster_trials</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">init_condition</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cluster_trials</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">clusters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cmap</span> <span class="o">=</span><span class="s1">&#39;seismic&#39;</span><span class="p">)</span> <span class="c1">#cmap=&#39;tab20b&#39;)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">new_state</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;seismic&#39;</span><span class="p">)</span> <span class="c1">#cmap=&#39;PiYG&#39;)</span>
+
+    <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span> <span class="p">;</span> <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span> <span class="p">;</span> <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span> <span class="p">;</span> <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+
+    <span class="n">axs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;beta = </span><span class="si">{</span><span class="n">beta</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Initial Spin Config&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Clusters&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Proposed Spin Config&#39;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[149]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0.5, 1.0, &#39;Proposed Spin Config&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/ising_spin_hamiltonians_23_1.png" src="_images/ising_spin_hamiltonians_23_1.png" />
+</div>
+</div>
+<p>Now to run sampler and compare how our order parameters look:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[155]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">betavals</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+
+<span class="n">cluster_spins</span> <span class="o">=</span> <span class="p">[</span><span class="n">StatMech_MHSampler</span><span class="p">(</span><span class="n">SwendsenWang</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;spin_glass&#39;</span><span class="p">),</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">betavals</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">cluster_spins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[161]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncols</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cluster_spins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">test_energies</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">betavals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cluster_spins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">autocorr</span><span class="p">[:</span><span class="mi">80</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">betavals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<span class="c1"># Edwards Anderson order parameter for spin glass materials</span>
+<span class="n">ea</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cluster_spins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">states</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">cluster_spins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">n_steps</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">betavals</span><span class="p">,</span> <span class="n">ea</span><span class="p">,</span><span class="s1">&#39;--o&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;EA Order Parameter&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Energies&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Autocorrelation&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;log beta&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
+
+<span class="n">box</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">([</span><span class="n">box</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">y0</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">width</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">height</span><span class="p">])</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center left&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[161]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.legend.Legend at 0x169ff7210&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/ising_spin_hamiltonians_26_1.png" src="_images/ising_spin_hamiltonians_26_1.png" />
+</div>
+</div>
+<p>Thus, we find that our energy landscapes for spin glass systems look much more physically accurate. The complicated, difficult-to-escape local minima can be clearly seen.</p>
+<p>Moreover, our autocorrelation functions look significantly more plausible. (with negative values arising primarily due to edge effects, as it was a costly simulation, it was not run for beyond 100 steps).</p>
+<p>Thus, cluster methods seem to be a significant improvement in simulating spin glasses.</p>
+<p>In conclusion, we were able to detect phase transitions in 2D Ising ferromagnetic and spin glass systems using the samples generated by a Metropolis Hastings Sampler.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Asad Hussain, Shivan Mittal, Aditi Pujar, Kody Anderson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

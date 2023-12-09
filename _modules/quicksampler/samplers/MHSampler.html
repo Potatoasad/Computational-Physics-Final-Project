@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>quicksampler.samplers.MHSampler &mdash; Computational Physics Final Project 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Computational Physics Final Project
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../softspheres_blackjax_phase_transition.html">Soft-sphere packing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../MetropolisHastingsSampler_Tests.html">Continuous MH Sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../BayesianInferenceTests.html">Simple Bayesian Inference Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../BlackHolePopulationAnalysis.html">Inferring the Distribution of Gravitational Waves</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gossetbravyi_spin_chain_blackjax_phase_transition.html">1D Quantum spin chains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">quicksampler</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Computational Physics Final Project</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">quicksampler.samplers.MHSampler</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for quicksampler.samplers.MHSampler</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">trange</span>
+<span class="kn">from</span> <span class="nn">.DomainChanger</span> <span class="kn">import</span> <span class="n">DomainChanger</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+
+<div class="viewcode-block" id="convert_to_jax_array">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.convert_to_jax_array">[docs]</a>
+<span class="k">def</span> <span class="nf">convert_to_jax_array</span><span class="p">(</span><span class="n">dictionary</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert selected values in a dictionary to JAX arrays.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dictionary : dict</span>
+<span class="sd">        The input dictionary containing values to be converted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A new dictionary with selected values converted to JAX arrays.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>  <span class="c1"># Check if the value is a float or int</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">])</span>  <span class="c1"># Replace with a JAX array of size 1</span>
+    <span class="k">return</span> <span class="n">dictionary</span></div>
+
+
+<div class="viewcode-block" id="create_rng_key">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.create_rng_key">[docs]</a>
+<span class="k">def</span> <span class="nf">create_rng_key</span><span class="p">(</span><span class="n">backend</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a random number generator key based on the backend.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    backend : str</span>
+<span class="sd">        The backend for computation (&#39;numpy&#39; or &#39;JAX&#39;).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array</span>
+<span class="sd">        A random number generator key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;numpy&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;JAX&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Do not recognize the </span><span class="si">{</span><span class="n">backend</span><span class="si">}</span><span class="s2"> backend&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AbstractProposal">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.AbstractProposal">[docs]</a>
+<span class="k">class</span> <span class="nc">AbstractProposal</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract proposal for generating new states based on the current state.</span>
+
+<span class="sd">    This class serves as a base for specific proposal distributions. It defines</span>
+<span class="sd">    the common functionality and interface for proposing new values for variables</span>
+<span class="sd">    in the state dictionary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    step_size : float</span>
+<span class="sd">        The step size for the proposal.</span>
+<span class="sd">    backend : str, optional</span>
+<span class="sd">        The backend for computation (&#39;numpy&#39; or &#39;JAX&#39;), defaults to &#39;numpy&#39;.</span>
+<span class="sd">    rng_key : array, optional</span>
+<span class="sd">        The random number generator key, defaults to None.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    __call__(x)</span>
+<span class="sd">        Generate a new state based on the current state &#39;x&#39;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;numpy&#39;</span><span class="p">,</span> <span class="n">rng_key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize an abstract proposal.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        step_size : float</span>
+<span class="sd">            The step size for the proposal.</span>
+<span class="sd">        backend : str, optional</span>
+<span class="sd">            The backend for computation (&#39;numpy&#39; or &#39;JAX&#39;), defaults to &#39;numpy&#39;.</span>
+<span class="sd">        rng_key : array, optional</span>
+<span class="sd">            The random number generator key, defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span> <span class="o">=</span> <span class="n">step_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span> <span class="o">=</span> <span class="n">rng_key</span>
+        <span class="k">if</span> <span class="n">rng_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span> <span class="o">=</span> <span class="n">create_rng_key</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AbstractProposal.__call__">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.AbstractProposal.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="n">value</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_step</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SphericalGaussianProposal">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.SphericalGaussianProposal">[docs]</a>
+<span class="k">class</span> <span class="nc">SphericalGaussianProposal</span><span class="p">(</span><span class="n">AbstractProposal</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Spherical Gaussian proposal for generating new states.</span>
+
+<span class="sd">    This class defines a proposal distribution where the next step is sampled from</span>
+<span class="sd">    a spherical Gaussian distribution with a specified step size.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    step_size : float</span>
+<span class="sd">        The step size for the proposal.</span>
+<span class="sd">    backend : str, optional</span>
+<span class="sd">        The backend for computation (&#39;numpy&#39; or &#39;JAX&#39;), defaults to &#39;numpy&#39;.</span>
+<span class="sd">    rng_key : array, optional</span>
+<span class="sd">        The random number generator key, defaults to None.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;numpy&#39;</span><span class="p">,</span> <span class="n">rng_key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">step_size</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">rng_key</span><span class="o">=</span><span class="n">rng_key</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SphericalGaussianProposal.next_step">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.SphericalGaussianProposal.next_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">next_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the next proposed value for any variable inside the state dictionary x.</span>
+
+<span class="sd">        Within the state dictionary x (e.g., x = {&#39;mu&#39;: [0.1, 0.2], &#39;kappa&#39;: 0.3}),</span>
+<span class="sd">        each state variable (the key) has a value that parameterizes its current state.</span>
+<span class="sd">        This function will take in a value and compute the change in position needed</span>
+<span class="sd">        to go to the next step in the proposal.</span>
+
+<span class="sd">        e.g. </span>
+
+<span class="sd">        &gt;&gt;&gt; x = {&#39;mu&#39;: np.array([0.1, 0.2]), &#39;kappa&#39;: 0.3}</span>
+<span class="sd">        &gt;&gt;&gt; SphericalGaussianProposal(step_size=0.1)</span>
+<span class="sd">        &gt;&gt;&gt; SphericalGaussianProposal.next_step(&#39;mu&#39;, x[&#39;mu&#39;]) # random normal proposal with the right shape. </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            The variable key.</span>
+<span class="sd">        value : float, array-like</span>
+<span class="sd">            The current value of the variable.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array</span>
+<span class="sd">            The next proposed value for the variable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;numpy&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+                <span class="c1"># Add a random gaussian of std step size to every entry of the matrix</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">step_size</span> 
+            <span class="k">elif</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+                <span class="c1"># Add a random gaussian of std step size to the float value</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">step_size</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Got value of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2"> having value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> no idea what to do with this.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;JAX&#39;</span><span class="p">:</span>
+            <span class="n">new_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])):</span>
+                <span class="c1"># Add a random gaussian of std step size to every entry of the matrix</span>
+                <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">stop_gradient</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">new_key</span> <span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">step_size</span> 
+            <span class="k">elif</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">])[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="c1"># Add a random gaussian of std step size to the float value</span>
+                <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">stop_gradient</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">new_key</span><span class="p">))</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">step_size</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Got value of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2"> having value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> no idea what to do with this. It isnt </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">10.0</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Do not recognize the </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="si">}</span><span class="s2"> backend&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+
+
+<span class="n">MAX_REJECTS_DEFAULT</span> <span class="o">=</span> <span class="mi">10000</span>
+
+
+<div class="viewcode-block" id="MHSampler">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.MHSampler">[docs]</a>
+<span class="k">class</span> <span class="nc">MHSampler</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Metropolis-Hastings sampler for generating samples from a distribution.</span>
+
+<span class="sd">    This class implements the Metropolis-Hastings algorithm for generating samples</span>
+<span class="sd">    from a target distribution specified by a likelihood function. It works with both</span>
+<span class="sd">    &#39;numpy&#39; and &#39;JAX&#39; backends.</span>
+
+<span class="sd">    Samplers will accept an object with a logpdf method like the following:</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    likelihood : object</span>
+<span class="sd">        The likelihood object representing the target distribution.</span>
+<span class="sd">    init_position : dict</span>
+<span class="sd">        The initial position in the state space.</span>
+<span class="sd">    step_size : float, optional</span>
+<span class="sd">        The step size for the Metropolis-Hastings proposal, defaults to 1.</span>
+<span class="sd">    limits : dict, optional</span>
+<span class="sd">        The limits for variables in the state space, defaults to None.</span>
+<span class="sd">    rng_key : array, optional</span>
+<span class="sd">        The random number generator key, defaults to None.</span>
+<span class="sd">    backend : str, optional</span>
+<span class="sd">        The backend for computation (&#39;numpy&#39; or &#39;JAX&#39;), defaults to &#39;numpy&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">init_position</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">limits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;numpy&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Metropolis-Hastings sampler.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        likelihood : object</span>
+<span class="sd">            The likelihood object representing the target distribution.</span>
+<span class="sd">        init_position : dict</span>
+<span class="sd">            The initial position in the state space.</span>
+<span class="sd">        step_size : float, optional</span>
+<span class="sd">            The step size for the Metropolis-Hastings proposal, defaults to 1.</span>
+<span class="sd">        limits : dict, optional</span>
+<span class="sd">            The limits for variables in the state space, defaults to None.</span>
+<span class="sd">        rng_key : array, optional</span>
+<span class="sd">            The random number generator key, defaults to None.</span>
+<span class="sd">        backend : str, optional</span>
+<span class="sd">            The backend for computation (&#39;numpy&#39; or &#39;JAX&#39;), defaults to &#39;numpy&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span> <span class="o">=</span> <span class="n">rng_key</span>
+        <span class="k">if</span> <span class="n">rng_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span> <span class="o">=</span> <span class="n">create_rng_key</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">limits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">domain_changer</span> <span class="o">=</span> <span class="n">DomainChanger</span><span class="p">({</span><span class="n">key</span> <span class="p">:</span> <span class="s1">&#39;infinite&#39;</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">init_position</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span> <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">limit_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">init_position</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">limits</span><span class="p">:</span>
+                    <span class="n">limit_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">limits</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">limit_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;infinite&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">domain_changer</span> <span class="o">=</span> <span class="n">DomainChanger</span><span class="p">(</span><span class="n">limit_dict</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_position</span> <span class="o">=</span> <span class="n">init_position</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;JAX&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_position</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">stop_gradient</span><span class="p">(</span><span class="n">convert_to_jax_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_position</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_position_transformed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_changer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_position</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">likelihood_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_changer</span><span class="o">.</span><span class="n">logprob_wrapped</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">logpdf</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span> <span class="o">=</span> <span class="n">step_size</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">proposal</span> <span class="o">=</span> <span class="n">SphericalGaussianProposal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_size</span><span class="p">,</span> <span class="n">rng_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">rng_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;numpy&#39;</span><span class="p">:</span>
+                <span class="n">rng_key</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;JAX&#39;</span><span class="p">:</span>
+                <span class="n">rng_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Do not recognize the </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="si">}</span><span class="s2"> backend&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span> <span class="o">=</span> <span class="n">rng_key</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_rejects_default</span> <span class="o">=</span> <span class="mi">10000</span> 
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_acceptances</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span> <span class="o">=</span> <span class="mi">0</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="kc">None</span>                            
+
+<div class="viewcode-block" id="MHSampler.accept_reject">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.MHSampler.accept_reject">[docs]</a>
+    <span class="k">def</span> <span class="nf">accept_reject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_accept</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accept or reject a proposed state based on the acceptance probability.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        p_accept : float</span>
+<span class="sd">            The probability of accepting the proposed state.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if the proposed state is accepted, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;numpy&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p_accept</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;JAX&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng_key</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">p_accept</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MHSampler.step">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.MHSampler.step">[docs]</a>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">max_rejects</span> <span class="o">=</span> <span class="n">MAX_REJECTS_DEFAULT</span><span class="p">):</span> 
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a single Metropolis-Hastings step to generate a new state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : dict</span>
+<span class="sd">            The current state.</span>
+<span class="sd">        max_rejects : int, optional</span>
+<span class="sd">            The maximum number of rejections before raising an error, defaults to 10000.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            The new proposed state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">accept</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">rejects</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="p">((</span><span class="n">rejects</span> <span class="o">&lt;</span> <span class="n">max_rejects</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">accept</span><span class="p">)):</span>
+            <span class="n">x_proposal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proposal</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+            <span class="n">log_likelihood_current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">log_likelihood_proposal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood_func</span><span class="p">(</span><span class="n">x_proposal</span><span class="p">)</span>
+
+            <span class="n">p_current</span> <span class="o">=</span> <span class="n">log_likelihood_current</span> <span class="c1">#+ log_prior_current</span>
+            <span class="n">p_proposal</span> <span class="o">=</span> <span class="n">log_likelihood_proposal</span> <span class="c1">#+ log_prior_proposal </span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;JAX&#39;</span><span class="p">:</span>
+                <span class="n">p_accept</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p_proposal</span> <span class="o">-</span> <span class="n">p_current</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;numpy&#39;</span><span class="p">:</span>
+                <span class="n">p_accept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p_proposal</span> <span class="o">-</span> <span class="n">p_current</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Do not recognize the </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="si">}</span><span class="s2"> backend&quot;</span><span class="p">)</span>
+            
+            <span class="n">accept</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accept_reject</span><span class="p">(</span><span class="n">p_accept</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span> <span class="o">+=</span> <span class="mi">1</span> 
+
+            <span class="k">if</span> <span class="n">accept</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">running_acceptances</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">return</span> <span class="n">x_proposal</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rejects</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">rejects</span> <span class="o">==</span> <span class="n">max_rejects</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The next proposal has been rejected </span><span class="si">{max_rejects}</span><span class="s2"> times! try changing something&quot;</span><span class="p">)</span>       </div>
+
+
+<div class="viewcode-block" id="MHSampler.run">
+<a class="viewcode-back" href="../../../quicksampler.samplers.html#quicksampler.samplers.MHSampler.MHSampler.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">max_rejects</span><span class="o">=</span><span class="n">MAX_REJECTS_DEFAULT</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run the Metropolis-Hastings sampler for a specified number of steps.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_steps : int, optional</span>
+<span class="sd">            The number of Metropolis-Hastings steps to run, defaults to 1000.</span>
+<span class="sd">        max_rejects : int, optional</span>
+<span class="sd">            The maximum number of rejections before raising an error, defaults to MAX_REJECTS_DEFAULT.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            The result of the sampler in a dictionary format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">n_steps</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_position_transformed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_changer</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_position_transformed</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_acceptances</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span> <span class="o">=</span> <span class="mi">0</span> 
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Getting </span><span class="si">{</span><span class="n">n_steps</span><span class="si">}</span><span class="s2"> using Metropolis Hastings&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">trange</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">max_rejects</span><span class="o">=</span><span class="n">max_rejects</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_changer</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+
+        
+        <span class="n">acceptance_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_acceptances</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sampling finished with an acceptance rate of </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">acceptance_rate</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="n">decimals</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span></div>
+
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the result of the sampler in a dictionary format.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            The result of the sampler in a dictionary format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">def</span> <span class="nf">replace_array_with_float</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,):</span>
+                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">val</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">([</span><span class="n">replace_array_with_float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span><span class="p">)])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span></div>
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Asad Hussain, Shivan Mittal, Aditi Pujar, Kody Anderson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

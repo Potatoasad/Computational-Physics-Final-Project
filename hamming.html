@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hamming Codes and sphere packing &mdash; Computational Physics Final Project 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Computational Physics Final Project
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softspheres_blackjax_phase_transition.html">Soft-sphere packing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MetropolisHastingsSampler_Tests.html">Continuous MH Sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BayesianInferenceTests.html">Simple Bayesian Inference Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BlackHolePopulationAnalysis.html">Inferring the Distribution of Gravitational Waves</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gossetbravyi_spin_chain_blackjax_phase_transition.html">1D Quantum spin chains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">quicksampler</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Computational Physics Final Project</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Hamming Codes and sphere packing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/hamming.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Hamming-Codes-and-sphere-packing">
+<h1>Hamming Codes and sphere packing<a class="headerlink" href="#Hamming-Codes-and-sphere-packing" title="Link to this heading"></a></h1>
+<section id="Introduction">
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Link to this heading"></a></h2>
+<p>A <em>channel</em> is a medium through which communication can happen. One specific type of channel is the binary channel - messages and codewords are. This is the type of channel that will be considered here. In general, the channel is noisy - that is, communications are subject to errors. The channel coding problem is then to design a code such that errors are detected/ corrected to some extent. ## Hamming code One family of error correcting codes is <strong>Hamming codes</strong>. Error detection is achieved
+through redundancy. Instead of messages being naively mapped one-to-one to codewords, functions of several message letters are mapped to codewords. For example, the (7,4) Hamming code accepts messages of the form (<span class="math notranslate nohighlight">\(s_1,s_2,s_3,s_4\)</span>) and assigns codewords (<span class="math notranslate nohighlight">\(p_1,p_2,p_3,s_1,s_2,s_3,s_4\)</span>) according to</p>
+<div class="math notranslate nohighlight">
+\[p_1 = s_1 + s_3 + s_4\]</div>
+<div class="math notranslate nohighlight">
+\[p_2 = s_1 + s_2 + s_3\]</div>
+<div class="math notranslate nohighlight">
+\[p_3 = s_2 + s_3 + s_4\]</div>
+<p>These codewords can then be checked for parity. ## Redundancy As shown above, message integrity is achieved at the expense of message length due to redundancy. For a general Hamming code, messages of length <span class="math notranslate nohighlight">\(2^u - u - 1\)</span> are mapped to codewords of length <span class="math notranslate nohighlight">\(2^u - 1\)</span>. This is shown in graphical form:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">u</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">u</span> <span class="o">-</span> <span class="n">u</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">c</span><span class="o">/</span><span class="n">m</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Dimension&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Redundancy factor&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Redundancy of Hamming Codes&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/hamming_1_0.png" src="_images/hamming_1_0.png" />
+</div>
+</div>
+</section>
+<section id="Latency">
+<h2>Latency<a class="headerlink" href="#Latency" title="Link to this heading"></a></h2>
+<p>As can be seen, for long codeword/ message length, the redundancy approaches 0. The trade-off is that for long messages, the latency increases - before decoding can begin, the target must collect many message letters. # Sphere packing For Hamming codes of the from shown above, it has been shown that the codes correspond to hard-sphere packing in the high-dimensional function space over the message letter combinations. The goal of the packing problem is then to find a configuration such that the
+distance between spheres is some fixed number of errors. In general, the language defined over 3 data bits looks like a cube, with each vertex being accessible: o - - - o – – – - - o — - o - - o - o - - - - – - - o - - - o If we impose a constraint on the Hamming distance, we instead get a tetrahedral: o - - - x – – – - - x — - o - - x - o - - - - – - - o - - - x If again we impose a constraint on the Hamming distance, we get now a line: x - - - o – – – - - x — - x - - x - x - -
+- - – - - o - - - x The important thing to note here is that we maintain the number of dimensions, but gradually reduce the number of values available. Thus, a non-trivial feature of this model is that changes in radius and changes in the number of values (spheres) should be somehow correlated.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">packing_problem</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1"># How many to average over?</span>
+<span class="n">nsample</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="c1"># How many different n/r values?</span>
+<span class="n">nrn</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">low</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">high</span> <span class="o">=</span> <span class="mi">21</span><span class="p">:</span><span class="k">while</span>
+<span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">nrn</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># ns to step through</span>
+<span class="n">ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span><span class="n">high</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">step</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="c1"># rs to step through</span>
+<span class="n">rs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">nrn</span><span class="p">)</span>
+<span class="c1"># Metrics</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nrn</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsample</span><span class="p">))</span>
+<span class="c1"># For each sample</span>
+<span class="n">accepts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nsample</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nrn</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+  <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrn</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsample</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+      <span class="n">h</span> <span class="o">=</span> <span class="n">HardSpherePacking</span><span class="p">(</span><span class="n">number_balls</span><span class="o">=</span><span class="n">ns</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">relative_ball_diameter</span><span class="o">=</span><span class="n">rs</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">dimensions</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_samples</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+      <span class="n">h</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+      <span class="n">accept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">acceptance_rate</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+      <span class="n">accepts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">accept</span>
+    <span class="n">ds</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accepts</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/hamming_3_0.png" src="_images/hamming_3_0.png" />
+</div>
+</div>
+<p>As can be seen from the above matrix, this is indeed the case. # 7,4 Hamming code One specific case of Hamming codes is the (7,4) Hamming code. What does the analysis of this code show us? Recall that the number of data bits in the Hamming code is $ 2^u - u -1$, while the total number of bits is <span class="math notranslate nohighlight">\(2^u-1\)</span>. Thus, the redundancy is of interest and has the form</p>
+<div class="math notranslate nohighlight">
+\[r = \frac{2^u-u-1}{2^u-1}\]</div>
+<p>We can begin to think about this problem by looking at 3D. Although no such Hamming code exists, it will be useful to develop intuition.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">packing_problem</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1"># How many to average over?</span>
+<span class="n">nsample</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="c1"># How many n values to step through?</span>
+<span class="n">nn</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">low</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">high</span> <span class="o">=</span><span class="mi">21</span>
+<span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">nn</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Ns to step through</span>
+<span class="n">ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span><span class="n">high</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">step</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="c1"># Metrics</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nn</span><span class="p">)</span>
+<span class="c1"># For each sample</span>
+<span class="n">accepts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nsample</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nn</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+  <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsample</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">HardSpherePacking</span><span class="p">(</span><span class="n">number_balls</span><span class="o">=</span><span class="n">ns</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">relative_ball_diameter</span><span class="o">=</span><span class="mf">.41</span><span class="p">,</span><span class="n">dimensions</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_samples</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+    <span class="n">h</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+    <span class="n">accept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">acceptance_rate</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">accepts</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">accept</span>
+
+  <span class="c1"># Metric</span>
+  <span class="n">ds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accepts</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span><span class="n">ds</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/hamming_5_0.png" src="_images/hamming_5_0.png" />
+</div>
+</div>
+<p>As can be seen from the above plot, when a Hamming distance constraint (via the sphere radius) is imposed, we see a sharp drop in the acceptance rate to zero at just 4-5 spheres- the densest packing is achieved and can thus not accodomate more spheres. This single Hamming distance constraint corresponds to the above as going from a cube to a tetrahedron. It should be noted that the radius is important in this calculation and was derived according to
+<a class="reference external" href="https://math.stackexchange.com/questions/4122763/radii-of-spheres-bounded-in-a-regular-tetrahedron">tetrahedron</a> Can we find a general relation for the radius in higher-dimensions? I don’t know. However, knowing that this procedure works and the Hamming codes in higher dimensions, we can estimate it! Which brings us again to… # 7,4 Hamming Code</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">packing_problem</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1"># How many samples to average over?</span>
+<span class="n">nsample</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="c1"># How many r values to step through?</span>
+<span class="n">nr</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">low</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">high</span> <span class="o">=</span><span class="mi">21</span>
+<span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">nr</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># r values to step through</span>
+<span class="n">rs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">nr</span><span class="p">)</span>
+<span class="c1"># Metrics</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nr</span><span class="p">)</span>
+<span class="c1"># For each sample</span>
+<span class="n">accepts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nsample</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nr</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+  <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsample</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">HardSpherePacking</span><span class="p">(</span><span class="n">number_balls</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">relative_ball_diameter</span><span class="o">=</span><span class="n">rs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">dimensions</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_samples</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">h</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+    <span class="n">accept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">acceptance_rate</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">accepts</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">accept</span>
+
+  <span class="c1"># Metrics computation</span>
+  <span class="n">ds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accepts</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rs</span><span class="p">,</span><span class="n">ds</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/hamming_7_0.png" src="_images/hamming_7_0.png" />
+</div>
+</div>
+<p>As can be seen, this is less than .4, which is expected - as the dimension increases, the packing density decreases.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Asad Hussain, Shivan Mittal, Aditi Pujar, Kody Anderson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
