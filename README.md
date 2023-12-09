@@ -40,7 +40,7 @@ Numerous Physical problems can benefit from sampling algorithms. These range fro
 	</figure>
 	<br><br><br><br>
 	<figure>
-		<img src="spin_glass_transition.png" width="800">
+		<img src="spin_glass_transition.png" width="600">
 		<figcaption> Phase transition in spin glasses upon decreasing temperature, reflected in both - the Edwards Anderson Order parameter and the rugged energy landscapes </figcaption> 
 	</figure>
 	<br><br><br><br>
